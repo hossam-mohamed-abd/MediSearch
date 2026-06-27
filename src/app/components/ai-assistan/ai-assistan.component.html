@@ -1,31 +1,32 @@
-<!-- ai-chat.component.html -->
+<!-- ai-assistan.component.html -->
 
-<!-- Trail Canvas (رسم مسار الأنيميشن) -->
 <canvas #trailCanvas class="trail-canvas"></canvas>
 
-<!-- Backdrop -->
 <div
   class="chat-backdrop"
   [class.visible]="isChatOpen"
   (click)="closeChat()"
 ></div>
 
-<!-- FAB Button -->
+<!-- FAB — Glassmorphism -->
 <div
   class="chat-fab-wrapper"
-  [class.hidden]="isChatOpen || isAnimating "
-  #fabWrapper
+  [class.hidden]="isChatOpen || isAnimating"
 >
-  <button class="chat-fab" (click)="openChat()" aria-label="افتح المساعد الذكي" #fabBtn>
+  <button
+    class="chat-fab"
+    (click)="openChat()"
+    aria-label="افتح مساعد MediSearch"
+  >
     <div class="fab-ring fab-ring-1"></div>
     <div class="fab-ring fab-ring-2"></div>
     <div class="fab-ring fab-ring-3"></div>
-    <div class="fab-icon">
+    <div class="fab-inner-orb">
       <i class="fa-solid fa-robot"></i>
     </div>
-    <span class="fab-label">اسألني عن أي دواء</span>
     <div class="fab-pulse"></div>
   </button>
+  <div class="fab-tooltip">اسألني عن أي دواء</div>
 </div>
 
 <!-- Chat Widget -->
@@ -34,42 +35,48 @@
   [class.open]="isChatOpen"
   [class.closing]="isClosing"
   role="dialog"
-  aria-label="المساعد الذكي MediSearch"
+  aria-label="مساعد MediSearch الذكي"
   aria-modal="true"
   #chatWidget
 >
-  <!-- Header -->
+
+  <!-- Header — Gradient Mesh -->
   <div class="chat-header">
-    <div class="chat-header-left">
-      <div class="chat-avatar">
-        <i class="fa-solid fa-robot"></i>
-        <span class="chat-status-dot"></span>
+    <div class="chat-header-mesh"></div>
+    <div class="chat-header-inner">
+      <div class="chat-header-left">
+        <div class="chat-avatar">
+          <i class="fa-solid fa-robot"></i>
+          <span class="chat-status-dot"></span>
+        </div>
+        <div class="chat-header-info">
+          <h3>مساعد <span>MediSearch</span></h3>
+          <span class="chat-online">
+            <span class="online-dot"></span>
+            متصل الآن · يرد خلال ثوانٍ
+          </span>
+        </div>
       </div>
-      <div class="chat-header-info">
-        <h3>مساعد MediSearch</h3>
-        <span class="chat-online">متصل الآن · يرد خلال ثوانٍ</span>
+      <div class="chat-header-actions">
+        <button class="chat-icon-btn" aria-label="تصغير" (click)="closeChat()">
+          <i class="fa-solid fa-minus"></i>
+        </button>
+        <button class="chat-icon-btn danger" aria-label="إغلاق" (click)="closeChat()">
+          <i class="fa-solid fa-xmark"></i>
+        </button>
       </div>
-    </div>
-    <div class="chat-header-actions">
-      <button class="chat-icon-btn" aria-label="تصغير" (click)="closeChat()">
-        <i class="fa-solid fa-minus"></i>
-      </button>
-      <button class="chat-icon-btn danger" aria-label="إغلاق" (click)="closeChat()">
-        <i class="fa-solid fa-xmark"></i>
-      </button>
     </div>
   </div>
 
-  <!-- Messages Area -->
+  <!-- Messages -->
   <div class="chat-messages" #messagesContainer>
 
-    <!-- Date separator -->
     <div class="chat-date-sep"><span>اليوم</span></div>
 
     <!-- Intro messages -->
     <div
       class="msg msg-ai intro-msg"
-      *ngFor="let msg of introMessages; let i = index"
+      *ngFor="let msg of introMessages"
       [class.visible]="msg.visible"
     >
       <div class="msg-avatar">
@@ -83,7 +90,7 @@
 
     <!-- Suggestion chips -->
     <div class="suggestion-chips" [class.visible]="showSuggestions">
-      <span class="chips-label">اسأل مثلاً:</span>
+      <span class="chips-label">جرب تسأل عن:</span>
       <button
         class="s-chip"
         *ngFor="let s of suggestions"
@@ -115,7 +122,7 @@
     </ng-container>
 
     <!-- Typing indicator -->
-    <div class="msg msg-ai typing-msg" *ngIf="isTyping">
+    <div class="msg msg-ai" *ngIf="isTyping">
       <div class="msg-avatar">
         <i class="fa-solid fa-robot"></i>
       </div>
@@ -137,7 +144,7 @@
     >{{ r }}</button>
   </div>
 
-  <!-- Input Area -->
+  <!-- Input -->
   <div class="chat-input-area">
     <div class="chat-input-wrap">
       <button class="input-icon-btn" aria-label="إرفاق">
@@ -163,7 +170,7 @@
     </div>
     <p class="chat-disclaimer">
       <i class="fa-solid fa-shield-heart"></i>
-      هذا مساعد ذكاء اصطناعي — استشر طبيبك دائماً قبل تناول أي دواء
+      استشر طبيبك دائماً قبل تناول أي دواء
     </p>
   </div>
 
