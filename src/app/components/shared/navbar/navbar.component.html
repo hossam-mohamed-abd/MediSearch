@@ -1,0 +1,67 @@
+<!-- navbar.component.html -->
+<nav class="navbar" [class.scrolled]="isScrolled">
+  <div class="container">
+
+    <!-- Logo -->
+    <div class="logo">
+      <div class="logo-icon">
+        <i class="fa-solid fa-capsules"></i>
+      </div>
+      <span class="logo-text">Medi<span class="accent">Search</span></span>
+    </div>
+
+    <!-- Links -->
+    <ul class="nav-links">
+      <li><a href="#" class="nav-link"><i class="fa-solid fa-house"></i><span>Home</span></a></li>
+      <li><a href="#" class="nav-link"><i class="fa-solid fa-pills"></i><span>Medicines</span></a></li>
+      <li><a href="#" class="nav-link"><i class="fa-solid fa-hospital"></i><span>Pharmacies</span></a></li>
+      <li><a href="#" class="nav-link"><i class="fa-solid fa-layer-group"></i><span>Categories</span></a></li>
+      <li><a href="#" class="nav-link"><i class="fa-solid fa-fire"></i><span>Trending</span></a></li>
+      <li><a href="#" class="nav-link"><i class="fa-solid fa-scale-balanced"></i><span>Compare</span></a></li>
+    </ul>
+
+    <!-- Search -->
+    <div class="search-box">
+      <i class="fa-solid fa-magnifying-glass search-icon"></i>
+      <input type="text" placeholder="Search medicines..." />
+    </div>
+
+    <!-- Actions -->
+    <div class="actions">
+      <button class="icon-btn" aria-label="Favorites">
+        <i class="fa-regular fa-heart"></i>
+        <span class="badge">3</span>
+      </button>
+      <button class="icon-btn" aria-label="Notifications">
+        <i class="fa-regular fa-bell"></i>
+        <span class="badge">2</span>
+      </button>
+      <button class="lang-btn">AR</button>
+      <button class="profile-btn" aria-label="Profile">
+        <i class="fa-regular fa-user"></i>
+      </button>
+      <button class="menu-btn" (click)="toggleMenu()" aria-label="Menu">
+        <i class="fa-solid" [class.fa-bars]="!isMenuOpen" [class.fa-xmark]="isMenuOpen"></i>
+      </button>
+    </div>
+
+  </div>
+
+  <!-- Mobile Menu -->
+  <div class="mobile-menu" [class.show]="isMenuOpen">
+    <div class="mobile-search">
+      <i class="fa-solid fa-magnifying-glass"></i>
+      <input type="text" placeholder="Search medicines..." />
+    </div>
+    <div class="mobile-links">
+      <a href="#"><i class="fa-solid fa-house"></i>Home</a>
+      <a href="#"><i class="fa-solid fa-pills"></i>Medicines</a>
+      <a href="#"><i class="fa-solid fa-hospital"></i>Pharmacies</a>
+      <a href="#"><i class="fa-solid fa-layer-group"></i>Categories</a>
+      <a href="#"><i class="fa-solid fa-fire"></i>Trending</a>
+      <a href="#"><i class="fa-solid fa-scale-balanced"></i>Compare</a>
+      <a href="#"><i class="fa-regular fa-heart"></i>Favorites</a>
+      <a href="#"><i class="fa-regular fa-user"></i>Profile</a>
+    </div>
+  </div>
+</nav>

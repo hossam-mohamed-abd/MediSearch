@@ -1,0 +1,100 @@
+.section {
+  padding: 100px 0;
+}
+
+.container {
+  width: 90%;
+  margin: auto;
+}
+
+h2 {
+  text-align: center;
+  margin-bottom: 50px;
+  font-size: 2.2rem;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns:
+    repeat(auto-fit, minmax(250px, 1fr));
+
+  gap: 30px;
+}
+
+.card,
+.feature-card,
+.medicine-card,
+.pharmacy-card,
+.step,
+.stat {
+  background: white;
+  padding: 35px;
+  border-radius: 20px;
+  box-shadow:
+    0 5px 30px rgba(0,0,0,.08);
+
+  text-align: center;
+}
+
+.chips {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 15px;
+}
+
+.chips button {
+  border: none;
+  padding: 15px 25px;
+  border-radius: 30px;
+  background: #f2f5f7;
+  cursor: pointer;
+}
+
+.steps {
+  display: flex;
+  justify-content: center;
+  gap: 40px;
+  flex-wrap: wrap;
+}
+
+.statistics {
+  background: #0f766e;
+  color: white;
+  padding: 100px 0;
+}
+
+.statistics .container {
+  display: grid;
+  grid-template-columns:
+    repeat(auto-fit, minmax(220px,1fr));
+  gap: 30px;
+}
+
+.footer-grid {
+  display: grid;
+  grid-template-columns:
+    repeat(auto-fit, minmax(250px,1fr));
+
+  gap: 40px;
+}
+
+footer {
+  padding: 80px 0;
+  background: #0b1120;
+  color: white;
+}
+
+footer a {
+  display: block;
+  margin-top: 15px;
+  color: #ddd;
+  text-decoration: none;
+}
+
+.social {
+  display: flex;
+  gap: 20px;
+  font-size: 1.5rem;
+  margin-top: 20px;
+}

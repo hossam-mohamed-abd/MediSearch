@@ -1,0 +1,103 @@
+.ai-assistant {
+  padding: 120px 0;
+  background: #f8fafc;
+}
+
+.container {
+  width: 90%;
+  margin: auto;
+}
+
+.title {
+  text-align: center;
+  margin-bottom: 60px;
+}
+
+.badge {
+  background: #14b8a6;
+  color: white;
+
+  padding: 10px 20px;
+  border-radius: 30px;
+}
+
+.title h2 {
+  margin-top: 25px;
+  font-size: 3rem;
+}
+
+.title p {
+  margin-top: 20px;
+  color: #666;
+}
+
+.chat-preview {
+  width: 700px;
+  max-width: 100%;
+  margin: auto;
+
+  background: white;
+
+  padding: 40px;
+
+  border-radius: 30px;
+
+  box-shadow:
+    0 10px 40px rgba(0,0,0,.08);
+}
+
+.message {
+  width: fit-content;
+
+  max-width: 75%;
+
+  padding: 15px 20px;
+
+  border-radius: 20px;
+
+  margin-bottom: 20px;
+}
+
+.message.ai {
+  background: #f3f4f6;
+}
+
+.message.user {
+  background: #14b8a6;
+  color: white;
+  margin-left: auto;
+}
+
+.suggestions {
+  margin-top: 35px;
+
+  display: flex;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 15px;
+}
+
+.suggestions button {
+  border: none;
+  background: white;
+  padding: 14px 20px;
+  border-radius: 30px;
+  cursor: pointer;
+}
+
+.chat-btn {
+  display: block;
+
+  margin: 40px auto 0;
+
+  border: none;
+
+  background: #0f766e;
+  color: white;
+
+  padding: 18px 40px;
+  border-radius: 40px;
+
+  cursor: pointer;
+  font-size: 16px;
+}
