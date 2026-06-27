@@ -566,9 +566,10 @@ button { cursor: pointer; font-family: inherit; border: none; outline: none; }
   position: absolute;
   inset: 0;
   background-image: url('/images/pharmacy-bg.jpg');
+  background-attachment: fixed;
   background-size: cover;
   background-position: center;
-  opacity: 0.06;
+  opacity: 0.9;
   z-index: 0;
 }
 

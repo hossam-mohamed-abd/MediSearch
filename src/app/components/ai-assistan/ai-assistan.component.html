@@ -1,77 +1,170 @@
-<section class="ai-assistant">
+<!-- ai-chat.component.html -->
 
-  <div class="container">
+<!-- Trail Canvas (رسم مسار الأنيميشن) -->
+<canvas #trailCanvas class="trail-canvas"></canvas>
 
-    <div class="title">
+<!-- Backdrop -->
+<div
+  class="chat-backdrop"
+  [class.visible]="isChatOpen"
+  (click)="closeChat()"
+></div>
 
-      <span class="badge">
-        🤖 AI Powered
-      </span>
-
-      <h2>
-        Meet MediSearch AI Assistant
-      </h2>
-
-      <p>
-        Your intelligent assistant for medicines,
-        alternatives, pharmacies and medication safety.
-      </p>
-
-    </div>
-
-    <div class="chat-preview">
-
-      <div class="message ai">
-        👋 Hello! I'm MediSearch Assistant.
-      </div>
-
-      <div class="message user">
-        I can't find Panadol Extra.
-      </div>
-
-      <div class="message ai">
-        I found 12 nearby pharmacies and 3 alternatives.
-      </div>
-
-      <div class="message user">
-        Show me alternatives.
-      </div>
-
-      <div class="message ai">
-        ✓ Fevadol Plus
-        <br>
-        ✓ Paramol Extra
-        <br>
-        ✓ Panadol Advance
-      </div>
-
-    </div>
-
-    <div class="suggestions">
-
-      <button>
-        Find Panadol Extra
-      </button>
-
-      <button>
-        Drug Interactions
-      </button>
-
-      <button>
-        Find Alternatives
-      </button>
-
-      <button>
-        Nearby Pharmacies
-      </button>
-
-    </div>
-
-    <button class="chat-btn">
+<!-- FAB Button -->
+<div
+  class="chat-fab-wrapper"
+  [class.hidden]="isChatOpen || isAnimating "
+  #fabWrapper
+>
+  <button class="chat-fab" (click)="openChat()" aria-label="افتح المساعد الذكي" #fabBtn>
+    <div class="fab-ring fab-ring-1"></div>
+    <div class="fab-ring fab-ring-2"></div>
+    <div class="fab-ring fab-ring-3"></div>
+    <div class="fab-icon">
       <i class="fa-solid fa-robot"></i>
-      Try AI Assistant
-    </button>
+    </div>
+    <span class="fab-label">اسألني عن أي دواء</span>
+    <div class="fab-pulse"></div>
+  </button>
+</div>
+
+<!-- Chat Widget -->
+<div
+  class="chat-widget"
+  [class.open]="isChatOpen"
+  [class.closing]="isClosing"
+  role="dialog"
+  aria-label="المساعد الذكي MediSearch"
+  aria-modal="true"
+  #chatWidget
+>
+  <!-- Header -->
+  <div class="chat-header">
+    <div class="chat-header-left">
+      <div class="chat-avatar">
+        <i class="fa-solid fa-robot"></i>
+        <span class="chat-status-dot"></span>
+      </div>
+      <div class="chat-header-info">
+        <h3>مساعد MediSearch</h3>
+        <span class="chat-online">متصل الآن · يرد خلال ثوانٍ</span>
+      </div>
+    </div>
+    <div class="chat-header-actions">
+      <button class="chat-icon-btn" aria-label="تصغير" (click)="closeChat()">
+        <i class="fa-solid fa-minus"></i>
+      </button>
+      <button class="chat-icon-btn danger" aria-label="إغلاق" (click)="closeChat()">
+        <i class="fa-solid fa-xmark"></i>
+      </button>
+    </div>
+  </div>
+
+  <!-- Messages Area -->
+  <div class="chat-messages" #messagesContainer>
+
+    <!-- Date separator -->
+    <div class="chat-date-sep"><span>اليوم</span></div>
+
+    <!-- Intro messages -->
+    <div
+      class="msg msg-ai intro-msg"
+      *ngFor="let msg of introMessages; let i = index"
+      [class.visible]="msg.visible"
+    >
+      <div class="msg-avatar">
+        <i class="fa-solid fa-robot"></i>
+      </div>
+      <div class="msg-bubble">
+        <span [innerHTML]="msg.text"></span>
+        <div class="msg-time">{{ msg.time }}</div>
+      </div>
+    </div>
+
+    <!-- Suggestion chips -->
+    <div class="suggestion-chips" [class.visible]="showSuggestions">
+      <span class="chips-label">اسأل مثلاً:</span>
+      <button
+        class="s-chip"
+        *ngFor="let s of suggestions"
+        (click)="sendSuggestion(s)"
+      >{{ s }}</button>
+    </div>
+
+    <!-- Dynamic messages -->
+    <ng-container *ngFor="let msg of messages">
+      <div class="msg msg-user" *ngIf="msg.role === 'user'">
+        <div class="msg-bubble user-bubble">
+          <span>{{ msg.text }}</span>
+          <div class="msg-time">{{ msg.time }}</div>
+        </div>
+        <div class="msg-avatar user-avatar">
+          <i class="fa-regular fa-user"></i>
+        </div>
+      </div>
+
+      <div class="msg msg-ai" *ngIf="msg.role === 'ai'">
+        <div class="msg-avatar">
+          <i class="fa-solid fa-robot"></i>
+        </div>
+        <div class="msg-bubble">
+          <span [innerHTML]="msg.text"></span>
+          <div class="msg-time">{{ msg.time }}</div>
+        </div>
+      </div>
+    </ng-container>
+
+    <!-- Typing indicator -->
+    <div class="msg msg-ai typing-msg" *ngIf="isTyping">
+      <div class="msg-avatar">
+        <i class="fa-solid fa-robot"></i>
+      </div>
+      <div class="msg-bubble typing-bubble">
+        <div class="typing-dots">
+          <span></span><span></span><span></span>
+        </div>
+      </div>
+    </div>
 
   </div>
 
-</section>
+  <!-- Quick Replies -->
+  <div class="quick-replies" *ngIf="quickReplies.length > 0">
+    <button
+      class="quick-reply"
+      *ngFor="let r of quickReplies"
+      (click)="sendSuggestion(r)"
+    >{{ r }}</button>
+  </div>
+
+  <!-- Input Area -->
+  <div class="chat-input-area">
+    <div class="chat-input-wrap">
+      <button class="input-icon-btn" aria-label="إرفاق">
+        <i class="fa-solid fa-paperclip"></i>
+      </button>
+      <input
+        class="chat-input"
+        type="text"
+        placeholder="اكتب اسم الدواء أو سؤالك..."
+        [(ngModel)]="inputText"
+        (keydown.enter)="sendMessage()"
+        [disabled]="isTyping"
+        #chatInput
+      />
+      <button
+        class="send-btn"
+        (click)="sendMessage()"
+        [disabled]="!inputText.trim() || isTyping"
+        aria-label="إرسال"
+      >
+        <i class="fa-solid fa-paper-plane"></i>
+      </button>
+    </div>
+    <p class="chat-disclaimer">
+      <i class="fa-solid fa-shield-heart"></i>
+      هذا مساعد ذكاء اصطناعي — استشر طبيبك دائماً قبل تناول أي دواء
+    </p>
+  </div>
+
+</div>

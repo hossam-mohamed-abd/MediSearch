@@ -7,11 +7,11 @@ import { FeaturedPharmaciesComponent } from "./components/featured-pharmacies/fe
 import { AiFeaturesComponent } from "./components/ai-features/ai-features.component";
 import { HowItWorksComponent } from "./components/how-it-works/how-it-works.component";
 import { StatisticsComponent } from "./components/statistics/statistics.component";
-import { AiAssistanComponent } from "../ai-assistan/ai-assistan.component";
+import { AiChatComponent } from "../ai-assistan/ai-assistan.component";
 
 @Component({
   selector: 'app-home',
-  imports: [HeroComponent, PopularSearchesComponent, TrendingMedicinesComponent, CategoriesComponent, FeaturedPharmaciesComponent, AiFeaturesComponent, HowItWorksComponent, StatisticsComponent, AiAssistanComponent],
+  imports: [HeroComponent, PopularSearchesComponent, TrendingMedicinesComponent, CategoriesComponent, FeaturedPharmaciesComponent, AiFeaturesComponent, HowItWorksComponent, StatisticsComponent, AiChatComponent],
   templateUrl: './home.component.html',
   styleUrl: './home.component.css',
 })
