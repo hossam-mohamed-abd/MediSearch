@@ -8,10 +8,11 @@ import { AiFeaturesComponent } from "./components/ai-features/ai-features.compon
 import { HowItWorksComponent } from "./components/how-it-works/how-it-works.component";
 import { StatisticsComponent } from "./components/statistics/statistics.component";
 import { AiChatComponent } from "../ai-assistan/ai-assistan.component";
+import { FooterComponent } from "../shared/footer/footer.component";
 
 @Component({
   selector: 'app-home',
-  imports: [HeroComponent, PopularSearchesComponent, TrendingMedicinesComponent, CategoriesComponent, FeaturedPharmaciesComponent, AiFeaturesComponent, HowItWorksComponent, StatisticsComponent, AiChatComponent],
+  imports: [HeroComponent, PopularSearchesComponent, TrendingMedicinesComponent, CategoriesComponent, FeaturedPharmaciesComponent, AiFeaturesComponent, HowItWorksComponent, StatisticsComponent, AiChatComponent, FooterComponent],
   templateUrl: './home.component.html',
   styleUrl: './home.component.css',
 })

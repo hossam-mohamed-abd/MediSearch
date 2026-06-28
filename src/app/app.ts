@@ -1,6 +1,5 @@
 import { RouterOutlet } from '@angular/router';
 import { NavbarComponent } from './components/shared/navbar/navbar.component';
-import { FooterComponent } from './components/shared/footer/footer.component';
 import { Component, inject, OnInit, signal } from '@angular/core';
 
 import { AuthService } from './core/services/auth.service';
@@ -9,7 +8,7 @@ import { AuthStateService } from './core/services/auth-state';
 
 @Component({
   selector: 'app-root',
-  imports: [RouterOutlet, NavbarComponent, FooterComponent],
+  imports: [RouterOutlet, NavbarComponent],
   templateUrl: './app.html',
   styleUrl: './app.css',
 })

@@ -1,272 +1,239 @@
+<!-- register.component.html -->
 <div class="register-page">
 
-  <!-- Left Side -->
-  <div class="register-banner">
+  <!-- ── Left Panel ──────────────────────────────────────── -->
+  <div class="left-panel">
 
-    <div class="overlay"></div>
+    <div class="panel-bg"></div>
+    <div class="panel-orb panel-orb-1"></div>
+    <div class="panel-orb panel-orb-2"></div>
 
-    <div class="banner-content">
+    <div class="panel-content">
 
-      <div class="logo">
-        <i class="fa-solid fa-capsules"></i>
-        <span>MediSearch</span>
+      <div class="brand">
+        <div class="brand-mark">
+          <i class="fa-solid fa-capsules"></i>
+        </div>
+        <span class="brand-name">Medi<span class="accent">Search</span></span>
       </div>
 
-      <h1>
-        Join The Future Of
-        Smart Medicine Search
-      </h1>
+      <div class="panel-headline">
+        <h1>
+          The smarter way<br>
+          to find your<br>
+          <span class="headline-gradient">medicine.</span>
+        </h1>
+        <p>
+          Join thousands of Egyptians who search, compare
+          and discover medicines with AI-powered insights.
+        </p>
+      </div>
 
-      <p>
-        Find medicines, compare prices,
-        discover alternatives and receive
-        AI-powered recommendations.
-      </p>
-
-      <div class="features">
-
-        <div class="feature">
-          <i class="fa-solid fa-pills"></i>
-          <span>Find Any Medicine</span>
+      <div class="panel-features">
+        <div class="pf-item">
+          <div class="pf-icon">
+            <i class="fa-solid fa-pills"></i>
+          </div>
+          <div>
+            <strong>Find Any Medicine</strong>
+            <span>Search by name or active ingredient</span>
+          </div>
         </div>
-
-        <div class="feature">
-          <i class="fa-solid fa-scale-balanced"></i>
-          <span>Compare Prices</span>
+        <div class="pf-item">
+          <div class="pf-icon">
+            <i class="fa-solid fa-robot"></i>
+          </div>
+          <div>
+            <strong>AI Recommendations</strong>
+            <span>Smart alternatives and safety checks</span>
+          </div>
         </div>
-
-        <div class="feature">
-          <i class="fa-solid fa-robot"></i>
-          <span>AI Recommendations</span>
+        <div class="pf-item">
+          <div class="pf-icon">
+            <i class="fa-solid fa-location-dot"></i>
+          </div>
+          <div>
+            <strong>Nearby Pharmacies</strong>
+            <span>Real-time stock near you</span>
+          </div>
         </div>
-
-        <div class="feature">
-          <i class="fa-solid fa-location-dot"></i>
-          <span>Nearest Pharmacy</span>
-        </div>
-
       </div>
 
     </div>
-
   </div>
 
-  <!-- Right Side -->
-  <div class="register-form-container">
+  <!-- ── Right Form ───────────────────────────────────────── -->
+  <div class="right-panel">
 
-    <div class="form-card">
+    <!-- Soft orbs only — no grid -->
+    <div class="orb orb-a"></div>
+    <div class="orb orb-b"></div>
 
-      <h2>Create Account</h2>
+    <div class="form-scroll">
+      <div class="glass-card register-card">
 
-      <p>
-        Start your journey with MediSearch.
-      </p>
+        <div class="card-accent"></div>
 
-      <form
-        [formGroup]="registerForm"
-        (ngSubmit)="register()"
-      >
-
-        <div class="two-columns">
-
-          <div class="form-group">
-            <label>First Name</label>
-
-            <input
-              type="text"
-              formControlName="firstName"
-            />
-          </div>
-
-          <div class="form-group">
-            <label>Last Name</label>
-
-            <input
-              type="text"
-              formControlName="lastName"
-            />
-          </div>
-
+        <div class="card-header">
+          <h2>Create your account</h2>
+          <p>Fill in the details below to get started</p>
         </div>
 
-        <div class="form-group">
+        <form [formGroup]="registerForm" (ngSubmit)="register()">
 
-          <label>Email</label>
-
-          <input
-            type="email"
-            formControlName="email"
-          />
-
-        </div>
-
-        <div class="form-group">
-
-          <label>Phone</label>
-
-          <input
-            type="text"
-            formControlName="phone"
-          />
-
-        </div>
-
-        <div class="two-columns">
-
-          <div class="form-group">
-
-            <label>Password</label>
-
-            <input
-              type="password"
-              formControlName="password"
-            />
-
+          <!-- Section: Personal -->
+          <div class="form-section-label">
+            <i class="fa-solid fa-user"></i>
+            Personal information
           </div>
 
-          <div class="form-group">
+          <div class="two-col">
+            <div class="field">
+              <label for="firstName">First name</label>
+              <div class="input-wrap" [class.invalid]="registerForm.get('firstName')?.touched && registerForm.get('firstName')?.invalid">
+                <input id="firstName" type="text" placeholder="Ahmed" formControlName="firstName" autocomplete="given-name" />
+              </div>
+              @if(registerForm.get('firstName')?.touched && registerForm.get('firstName')?.invalid) {
+                <span class="field-error"><i class="fa-solid fa-triangle-exclamation"></i> Required</span>
+              }
+            </div>
 
-            <label>Confirm Password</label>
-
-            <input
-              type="password"
-              formControlName="confirmPassword"
-            />
-
+            <div class="field">
+              <label for="lastName">Last name</label>
+              <div class="input-wrap" [class.invalid]="registerForm.get('lastName')?.touched && registerForm.get('lastName')?.invalid">
+                <input id="lastName" type="text" placeholder="Mohamed" formControlName="lastName" autocomplete="family-name" />
+              </div>
+              @if(registerForm.get('lastName')?.touched && registerForm.get('lastName')?.invalid) {
+                <span class="field-error"><i class="fa-solid fa-triangle-exclamation"></i> Required</span>
+              }
+            </div>
           </div>
 
-        </div>
-
-        <!-- Country -->
-
-        <div class="form-group">
-
-          <label>Country</label>
-
-          <select
-            formControlName="countryId"
-            (change)="onCountryChange()"
-          >
-
-            <option value="">
-              Select Country
-            </option>
-
-            @for(
-            country of countries;
-            track country.id
-            ){
-
-            <option
-              [value]="country.id"
-            >
-              {{country.name}}
-            </option>
-
+          <div class="field">
+            <label for="email">Email address</label>
+            <div class="input-wrap" [class.invalid]="registerForm.get('email')?.touched && registerForm.get('email')?.invalid">
+              <i class="fa-regular fa-envelope field-icon"></i>
+              <input id="email" type="email" placeholder="you@example.com" formControlName="email" autocomplete="email" />
+            </div>
+            @if(registerForm.get('email')?.touched && registerForm.get('email')?.invalid) {
+              <span class="field-error"><i class="fa-solid fa-triangle-exclamation"></i> Enter a valid email</span>
             }
+          </div>
 
-          </select>
-
-        </div>
-
-        <!-- Governorate -->
-
-        <div class="form-group">
-
-          <label>Governorate</label>
-
-          <select
-            formControlName="governorateId"
-            (change)="onGovernorateChange()"
-          >
-
-            <option value="">
-              Select Governorate
-            </option>
-
-            @for(
-            governorate of governorates;
-            track governorate.id
-            ){
-
-            <option
-              [value]="governorate.id"
-            >
-              {{governorate.name}}
-            </option>
-
+          <div class="field">
+            <label for="phone">Phone number</label>
+            <div class="input-wrap" [class.invalid]="registerForm.get('phone')?.touched && registerForm.get('phone')?.invalid">
+              <i class="fa-solid fa-phone field-icon"></i>
+              <input id="phone" type="tel" placeholder="01xxxxxxxxx" formControlName="phone" autocomplete="tel" />
+            </div>
+            @if(registerForm.get('phone')?.touched && registerForm.get('phone')?.invalid) {
+              <span class="field-error"><i class="fa-solid fa-triangle-exclamation"></i> Required</span>
             }
+          </div>
 
-          </select>
+          <!-- Section: Security -->
+          <div class="form-section-label">
+            <i class="fa-solid fa-shield-halved"></i>
+            Security
+          </div>
 
-        </div>
-
-        <!-- City -->
-
-        <div class="form-group">
-
-          <label>City</label>
-
-          <select
-            formControlName="cityId"
-          >
-
-            <option value="">
-              Select City
-            </option>
-
-            @for(
-            city of cities;
-            track city.id
-            ){
-
-            <option
-              [value]="city.id"
-            >
-              {{city.name}}
-            </option>
-
+          <div class="field">
+            <label for="password">Password</label>
+            <div class="input-wrap" [class.invalid]="registerForm.get('password')?.touched && registerForm.get('password')?.invalid">
+              <i class="fa-solid fa-lock field-icon"></i>
+              <input id="password" [type]="showPass ? 'text' : 'password'" placeholder="Min. 8 chars" formControlName="password" autocomplete="new-password" />
+              <button type="button" class="toggle-pass" (click)="showPass = !showPass" tabindex="-1">
+                <i class="fa-regular" [class.fa-eye]="!showPass" [class.fa-eye-slash]="showPass"></i>
+              </button>
+            </div>
+            @if(registerForm.get('password')?.touched && registerForm.get('password')?.invalid) {
+              <span class="field-error"><i class="fa-solid fa-triangle-exclamation"></i> Min. 8 characters</span>
             }
+          </div>
 
-          </select>
+          <div class="field">
+            <label for="confirmPassword">Confirm password</label>
+            <div class="input-wrap" [class.invalid]="registerForm.get('confirmPassword')?.touched && registerForm.get('confirmPassword')?.invalid">
+              <i class="fa-solid fa-lock field-icon"></i>
+              <input id="confirmPassword" type="password" placeholder="Repeat password" formControlName="confirmPassword" autocomplete="new-password" />
+            </div>
+            @if(registerForm.get('confirmPassword')?.touched && registerForm.get('confirmPassword')?.invalid) {
+              <span class="field-error"><i class="fa-solid fa-triangle-exclamation"></i> Required</span>
+            }
+          </div>
 
-        </div>
+          <!-- Section: Location -->
+          <div class="form-section-label">
+            <i class="fa-solid fa-location-dot"></i>
+            Location
+          </div>
 
-        <button
-          class="register-btn"
-          [disabled]="isLoading"
-        >
+          <div class="field">
+            <label for="countryId">Country</label>
+            <div class="select-wrap" [class.invalid]="registerForm.get('countryId')?.touched && registerForm.get('countryId')?.invalid">
+              <i class="fa-solid fa-globe field-icon"></i>
+              <select id="countryId" formControlName="countryId" (change)="onCountryChange()">
+                <option value="">Select a country</option>
+                @for(country of countries; track country.id) {
+                  <option [value]="country.id">{{ country.name }}</option>
+                }
+              </select>
+              <i class="fa-solid fa-chevron-down select-arrow"></i>
+            </div>
+          </div>
 
-          @if(isLoading){
+          <div class="two-col">
+            <div class="field">
+              <label for="governorateId">Governorate</label>
+              <div class="select-wrap" [class.disabled]="registerForm.get('governorateId')?.disabled">
+                <i class="fa-solid fa-map field-icon"></i>
+                <select id="governorateId" formControlName="governorateId" (change)="onGovernorateChange()">
+                  <option value="">Select governorate</option>
+                  @for(gov of governorates; track gov.id) {
+                    <option [value]="gov.id">{{ gov.name }}</option>
+                  }
+                </select>
+                <i class="fa-solid fa-chevron-down select-arrow"></i>
+              </div>
+            </div>
 
-          <i
-            class="fa-solid fa-spinner fa-spin"
-          ></i>
+            <div class="field">
+              <label for="cityId">City</label>
+              <div class="select-wrap" [class.disabled]="registerForm.get('cityId')?.disabled">
+                <i class="fa-solid fa-city field-icon"></i>
+                <select id="cityId" formControlName="cityId">
+                  <option value="">Select city</option>
+                  @for(city of cities; track city.id) {
+                    <option [value]="city.id">{{ city.name }}</option>
+                  }
+                </select>
+                <i class="fa-solid fa-chevron-down select-arrow"></i>
+              </div>
+            </div>
+          </div>
 
-          }
+          <!-- Submit -->
+          <button class="submit-btn" type="submit" [disabled]="isLoading">
+            <span class="btn-content" [class.hidden]="isLoading">
+              Create Account
+              <i class="fa-solid fa-arrow-right"></i>
+            </span>
+            <span class="btn-loader" [class.visible]="isLoading">
+              <i class="fa-solid fa-spinner fa-spin"></i>
+              Creating account...
+            </span>
+            <div class="btn-shine"></div>
+          </button>
 
-          @else {
+        </form>
 
-          Create Account
-
-          }
-
-        </button>
-
-      </form>
-
-      <div class="login-link">
-
-        Already have an account?
-
-        <a routerLink="/login">
-          Login
-        </a>
+        <p class="switch-link">
+          Already have an account?
+          <a routerLink="/login">Sign in</a>
+        </p>
 
       </div>
-
     </div>
-
   </div>
 
 </div>
