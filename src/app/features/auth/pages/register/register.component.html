@@ -1,0 +1,272 @@
+<div class="register-page">
+
+  <!-- Left Side -->
+  <div class="register-banner">
+
+    <div class="overlay"></div>
+
+    <div class="banner-content">
+
+      <div class="logo">
+        <i class="fa-solid fa-capsules"></i>
+        <span>MediSearch</span>
+      </div>
+
+      <h1>
+        Join The Future Of
+        Smart Medicine Search
+      </h1>
+
+      <p>
+        Find medicines, compare prices,
+        discover alternatives and receive
+        AI-powered recommendations.
+      </p>
+
+      <div class="features">
+
+        <div class="feature">
+          <i class="fa-solid fa-pills"></i>
+          <span>Find Any Medicine</span>
+        </div>
+
+        <div class="feature">
+          <i class="fa-solid fa-scale-balanced"></i>
+          <span>Compare Prices</span>
+        </div>
+
+        <div class="feature">
+          <i class="fa-solid fa-robot"></i>
+          <span>AI Recommendations</span>
+        </div>
+
+        <div class="feature">
+          <i class="fa-solid fa-location-dot"></i>
+          <span>Nearest Pharmacy</span>
+        </div>
+
+      </div>
+
+    </div>
+
+  </div>
+
+  <!-- Right Side -->
+  <div class="register-form-container">
+
+    <div class="form-card">
+
+      <h2>Create Account</h2>
+
+      <p>
+        Start your journey with MediSearch.
+      </p>
+
+      <form
+        [formGroup]="registerForm"
+        (ngSubmit)="register()"
+      >
+
+        <div class="two-columns">
+
+          <div class="form-group">
+            <label>First Name</label>
+
+            <input
+              type="text"
+              formControlName="firstName"
+            />
+          </div>
+
+          <div class="form-group">
+            <label>Last Name</label>
+
+            <input
+              type="text"
+              formControlName="lastName"
+            />
+          </div>
+
+        </div>
+
+        <div class="form-group">
+
+          <label>Email</label>
+
+          <input
+            type="email"
+            formControlName="email"
+          />
+
+        </div>
+
+        <div class="form-group">
+
+          <label>Phone</label>
+
+          <input
+            type="text"
+            formControlName="phone"
+          />
+
+        </div>
+
+        <div class="two-columns">
+
+          <div class="form-group">
+
+            <label>Password</label>
+
+            <input
+              type="password"
+              formControlName="password"
+            />
+
+          </div>
+
+          <div class="form-group">
+
+            <label>Confirm Password</label>
+
+            <input
+              type="password"
+              formControlName="confirmPassword"
+            />
+
+          </div>
+
+        </div>
+
+        <!-- Country -->
+
+        <div class="form-group">
+
+          <label>Country</label>
+
+          <select
+            formControlName="countryId"
+            (change)="onCountryChange()"
+          >
+
+            <option value="">
+              Select Country
+            </option>
+
+            @for(
+            country of countries;
+            track country.id
+            ){
+
+            <option
+              [value]="country.id"
+            >
+              {{country.name}}
+            </option>
+
+            }
+
+          </select>
+
+        </div>
+
+        <!-- Governorate -->
+
+        <div class="form-group">
+
+          <label>Governorate</label>
+
+          <select
+            formControlName="governorateId"
+            (change)="onGovernorateChange()"
+          >
+
+            <option value="">
+              Select Governorate
+            </option>
+
+            @for(
+            governorate of governorates;
+            track governorate.id
+            ){
+
+            <option
+              [value]="governorate.id"
+            >
+              {{governorate.name}}
+            </option>
+
+            }
+
+          </select>
+
+        </div>
+
+        <!-- City -->
+
+        <div class="form-group">
+
+          <label>City</label>
+
+          <select
+            formControlName="cityId"
+          >
+
+            <option value="">
+              Select City
+            </option>
+
+            @for(
+            city of cities;
+            track city.id
+            ){
+
+            <option
+              [value]="city.id"
+            >
+              {{city.name}}
+            </option>
+
+            }
+
+          </select>
+
+        </div>
+
+        <button
+          class="register-btn"
+          [disabled]="isLoading"
+        >
+
+          @if(isLoading){
+
+          <i
+            class="fa-solid fa-spinner fa-spin"
+          ></i>
+
+          }
+
+          @else {
+
+          Create Account
+
+          }
+
+        </button>
+
+      </form>
+
+      <div class="login-link">
+
+        Already have an account?
+
+        <a routerLink="/login">
+          Login
+        </a>
+
+      </div>
+
+    </div>
+
+  </div>
+
+</div>

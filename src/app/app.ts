@@ -1,15 +1,34 @@
-import { Component, signal } from '@angular/core';
 import { RouterOutlet } from '@angular/router';
-import { NavbarComponent } from "./components/shared/navbar/navbar.component";
-import { HomeComponent } from "./components/home/home.component";
-import { FooterComponent } from "./components/shared/footer/footer.component";
+import { NavbarComponent } from './components/shared/navbar/navbar.component';
+import { FooterComponent } from './components/shared/footer/footer.component';
+import { Component, inject, OnInit, signal } from '@angular/core';
+
+import { AuthService } from './core/services/auth.service';
+
+import { AuthStateService } from './core/services/auth-state';
 
 @Component({
   selector: 'app-root',
-  imports: [RouterOutlet, NavbarComponent, HomeComponent, FooterComponent],
+  imports: [RouterOutlet, NavbarComponent, FooterComponent],
   templateUrl: './app.html',
-  styleUrl: './app.css'
+  styleUrl: './app.css',
 })
-export class App {
+export class App implements OnInit {
   protected readonly title = signal('TheSilence_DEPI_project_web_front');
+
+  private authService = inject(AuthService);
+
+  private authState = inject(AuthStateService);
+
+  ngOnInit() {
+    this.authService.profile().subscribe({
+      next: (res: any) => {
+        this.authState.setUser(res.user);
+      },
+
+      error: () => {
+        this.authState.clearUser();
+      },
+    });
+  }
 }
