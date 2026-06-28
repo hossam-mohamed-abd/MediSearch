@@ -14,30 +14,30 @@ import { AuthStateService } from '../../../../core/services/auth-state';
   styleUrl: './login.component.css',
 })
 export class Login {
-  private fb = inject(FormBuilder);
+  private fb        = inject(FormBuilder);
   private authService = inject(AuthService);
-  private router = inject(Router);
+  private router    = inject(Router);
   private authState = inject(AuthStateService);
 
-  isLoading = false;
+  isLoading    = false;
   errorMessage = '';
-  showPass = false;
+  showPass     = false;
 
-  // Focus tracking for glass input animation
   emailFocused = false;
-  passFocused = false;
+  passFocused  = false;
 
   loginForm = this.fb.group({
-    email: ['', [Validators.required, Validators.email]],
+    email:    ['', [Validators.required, Validators.email]],
     password: ['', [Validators.required, Validators.minLength(8)]],
   });
 
   login() {
-    if (this.loginForm.invalid) {
-      this.loginForm.markAllAsTouched();
-      return;
-    }
-    this.isLoading = true;
+    // Mark all touched so validation messages show immediately
+    this.loginForm.markAllAsTouched();
+
+    if (this.loginForm.invalid) return;
+
+    this.isLoading    = true;
     this.errorMessage = '';
 
     this.authService.login(this.loginForm.getRawValue()).subscribe({
@@ -47,12 +47,16 @@ export class Login {
         this.router.navigate(['/']);
       },
       error: (err) => {
-        this.isLoading = false;
+        this.isLoading   = false;
         this.errorMessage = err.error?.message || 'Invalid email or password';
+
+        // Mark both fields as invalid so the red border appears instantly
+        this.loginForm.get('email')?.setErrors({ serverError: true });
+        this.loginForm.get('password')?.setErrors({ serverError: true });
       },
     });
   }
 
-  get email() { return this.loginForm.get('email'); }
+  get email()    { return this.loginForm.get('email'); }
   get password() { return this.loginForm.get('password'); }
 }
