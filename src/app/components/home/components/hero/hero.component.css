@@ -16,7 +16,7 @@
   content: '';
   position: absolute;
   inset: 0;
-  background-image: url('/images/pharmacy-bg.jpg');
+  background-image: url('/images/pharmacy-bg.png');
   background-size: cover;
   background-position: center;
   background-attachment: fixed;
@@ -31,8 +31,8 @@
   background:
     linear-gradient(
       105deg,
-      rgba(6, 12, 24, 0.88) 0%,
-      rgba(6, 12, 24, 0.75) 45%,
+      rgba(6, 12, 24, 0.55) 0%,
+      rgba(6, 12, 24, 0.45) 45%,
       rgba(6, 12, 24, 0.55) 100%
     );
   z-index: 1;
