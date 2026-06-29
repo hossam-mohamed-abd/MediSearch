@@ -1,5 +1,5 @@
 // register.component.ts
-import { Component, inject, OnInit } from '@angular/core';
+import { Component, inject, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
@@ -12,7 +12,7 @@ import { AuthService } from '../../../../core/services/auth.service';
   templateUrl: './register.component.html',
   styleUrl: './register.component.css',
 })
-export class RegisterComponent implements OnInit {
+export class RegisterComponent implements OnInit, OnDestroy {
   private fb          = inject(FormBuilder);
   private authService = inject(AuthService);
   private router      = inject(Router);
@@ -21,10 +21,14 @@ export class RegisterComponent implements OnInit {
   governorates: any[] = [];
   cities:       any[] = [];
 
-  isLoading    = false;
-  showPass     = false;
-  errorMessage = '';
-  successMessage = '';
+  isLoading = false;
+  showPass  = false;
+
+  // Toast state
+  toast: { message: string; type: 'error' | 'success' } | null = null;
+  toastProgress = 100;
+  private toastTimer: any;
+  private toastInterval: any;
 
   private governoratesCache = new Map<number, any[]>();
   private citiesCache       = new Map<number, any[]>();
@@ -41,119 +45,135 @@ export class RegisterComponent implements OnInit {
     cityId:          [{ value: '', disabled: true }, Validators.required],
   });
 
-  ngOnInit() {
-    this.loadCountries();
+  ngOnInit() { this.loadCountries(); }
+
+  ngOnDestroy() { this.clearToastTimers(); }
+
+  // ── Toast ────────────────────────────────────────────────
+  showToast(message: string, type: 'error' | 'success') {
+    this.clearToastTimers();
+    this.toast = { message, type };
+    this.toastProgress = 100;
+
+    const duration = 5000;
+    const step = 100;
+    const decrement = (step / duration) * 100;
+
+    this.toastInterval = setInterval(() => {
+      this.toastProgress -= decrement;
+      if (this.toastProgress <= 0) this.dismissToast();
+    }, step);
+
+    this.toastTimer = setTimeout(() => this.dismissToast(), duration);
   }
 
+  dismissToast() {
+    this.clearToastTimers();
+    this.toast = null;
+    this.toastProgress = 100;
+  }
+
+  private clearToastTimers() {
+    clearTimeout(this.toastTimer);
+    clearInterval(this.toastInterval);
+  }
+
+  // ── Countries ────────────────────────────────────────────
   private loadCountries() {
     this.authService.getCountries().subscribe({
-      next: (res: any) => {
-        this.countries = res;
-        this.prefetchGovernorates(res);
-      },
-      error: (err) => console.error('Failed to load countries', err),
+      next: (res: any) => { this.countries = res; this.prefetchGovernorates(res); },
+      error: () => this.showToast('تعذّر تحميل الدول، يرجى تحديث الصفحة.', 'error'),
     });
   }
 
   private prefetchGovernorates(countries: any[]) {
     if (!countries?.length) return;
-    let index = 0;
-    const loadNext = () => {
-      if (index >= countries.length) return;
-      const country = countries[index++];
-      this.authService.getGovernorates(country.id).subscribe({
-        next: (govs: any) => {
-          this.governoratesCache.set(country.id, govs);
-          this.prefetchCities(govs);
-          loadNext();
-        },
-        error: () => loadNext(),
+    let i = 0;
+    const next = () => {
+      if (i >= countries.length) return;
+      const c = countries[i++];
+      this.authService.getGovernorates(c.id).subscribe({
+        next: (govs: any) => { this.governoratesCache.set(c.id, govs); this.prefetchCities(govs); next(); },
+        error: () => next(),
       });
     };
-    loadNext();
+    next();
   }
 
   private prefetchCities(governorates: any[]) {
     if (!governorates?.length) return;
-    let index = 0;
-    const loadNext = () => {
-      if (index >= governorates.length) return;
-      const gov = governorates[index++];
-      this.authService.getCities(gov.id).subscribe({
-        next: (cities: any) => {
-          this.citiesCache.set(gov.id, cities);
-          loadNext();
-        },
-        error: () => loadNext(),
+    let i = 0;
+    const next = () => {
+      if (i >= governorates.length) return;
+      const g = governorates[i++];
+      this.authService.getCities(g.id).subscribe({
+        next: (cities: any) => { this.citiesCache.set(g.id, cities); next(); },
+        error: () => next(),
       });
     };
-    loadNext();
+    next();
   }
 
+  // ── Location ─────────────────────────────────────────────
   onCountryChange() {
-    const countryId = Number(this.registerForm.get('countryId')?.value);
+    const id = Number(this.registerForm.get('countryId')?.value);
     this.governorates = [];
-    this.cities       = [];
+    this.cities = [];
     this.registerForm.get('governorateId')?.setValue('');
     this.registerForm.get('governorateId')?.disable();
     this.registerForm.get('cityId')?.setValue('');
     this.registerForm.get('cityId')?.disable();
-    if (!countryId) return;
+    if (!id) return;
 
-    if (this.governoratesCache.has(countryId)) {
-      this.governorates = this.governoratesCache.get(countryId)!;
+    if (this.governoratesCache.has(id)) {
+      this.governorates = this.governoratesCache.get(id)!;
       this.registerForm.get('governorateId')?.enable();
     } else {
-      this.authService.getGovernorates(countryId).subscribe({
+      this.authService.getGovernorates(id).subscribe({
         next: (res: any) => {
-          this.governoratesCache.set(countryId, res);
+          this.governoratesCache.set(id, res);
           this.governorates = res;
           this.registerForm.get('governorateId')?.enable();
           this.prefetchCities(res);
         },
-        error: (err) => console.error('Failed to load governorates', err),
+        error: () => this.showToast('تعذّر تحميل المحافظات.', 'error'),
       });
     }
   }
 
   onGovernorateChange() {
-    const governorateId = Number(this.registerForm.get('governorateId')?.value);
+    const id = Number(this.registerForm.get('governorateId')?.value);
     this.cities = [];
     this.registerForm.get('cityId')?.setValue('');
     this.registerForm.get('cityId')?.disable();
-    if (!governorateId) return;
+    if (!id) return;
 
-    if (this.citiesCache.has(governorateId)) {
-      this.cities = this.citiesCache.get(governorateId)!;
+    if (this.citiesCache.has(id)) {
+      this.cities = this.citiesCache.get(id)!;
       this.registerForm.get('cityId')?.enable();
     } else {
-      this.authService.getCities(governorateId).subscribe({
-        next: (res: any) => {
-          this.citiesCache.set(governorateId, res);
-          this.cities = res;
-          this.registerForm.get('cityId')?.enable();
-        },
-        error: (err) => console.error('Failed to load cities', err),
+      this.authService.getCities(id).subscribe({
+        next: (res: any) => { this.citiesCache.set(id, res); this.cities = res; this.registerForm.get('cityId')?.enable(); },
+        error: () => this.showToast('تعذّر تحميل المدن.', 'error'),
       });
     }
   }
 
+  // ── Submit ────────────────────────────────────────────────
   register() {
-    // Show validation errors immediately
     this.registerForm.markAllAsTouched();
-
-    if (this.registerForm.invalid) return;
-
-    const form = this.registerForm.getRawValue();
-
-    if (form.password !== form.confirmPassword) {
-      this.errorMessage = 'Passwords do not match';
+    if (this.registerForm.invalid) {
+      this.showToast('يرجى تعبئة جميع الحقول المطلوبة بشكل صحيح.', 'error');
       return;
     }
 
-    this.isLoading    = true;
-    this.errorMessage = '';
-    this.successMessage = '';
+    const form = this.registerForm.getRawValue();
+    if (form.password !== form.confirmPassword) {
+      this.showToast('كلمتا المرور غير متطابقتين.', 'error');
+      return;
+    }
+
+    this.isLoading = true;
 
     this.authService.register({
       firstName: form.firstName,
@@ -165,11 +185,13 @@ export class RegisterComponent implements OnInit {
     }).subscribe({
       next: () => {
         this.isLoading = false;
-        this.router.navigate(['/login']);
+        this.showToast('تم إنشاء الحساب بنجاح! جارٍ تحويلك لتسجيل الدخول...', 'success');
+        setTimeout(() => this.router.navigate(['/login']), 2000);
       },
       error: (err) => {
-        this.isLoading    = false;
-        this.errorMessage = err.error?.message || 'Registration failed. Please try again.';
+        this.isLoading = false;
+        const msg = err.error?.message || 'حدث خطأ أثناء التسجيل، يرجى المحاولة مرة أخرى.';
+        this.showToast(msg, 'error');
       },
     });
   }
