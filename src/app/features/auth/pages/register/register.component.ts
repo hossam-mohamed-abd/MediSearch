@@ -1,13 +1,20 @@
 // register.component.ts
 import { Component, inject, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormBuilder, ReactiveFormsModule, Validators, AbstractControl, ValidationErrors } from '@angular/forms';
+import {
+  FormBuilder,
+  ReactiveFormsModule,
+  Validators,
+  AbstractControl,
+  ValidationErrors,
+} from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
 import { AuthService } from '../../../../core/services/auth.service';
+import { NgZone } from '@angular/core';
 
 // Custom validator: passwords must match
 function passwordsMatch(control: AbstractControl): ValidationErrors | null {
-  const pass    = control.get('password')?.value;
+  const pass = control.get('password')?.value;
   const confirm = control.get('confirmPassword')?.value;
   if (confirm && pass !== confirm) {
     control.get('confirmPassword')?.setErrors({ mismatch: true });
@@ -29,91 +36,113 @@ function passwordsMatch(control: AbstractControl): ValidationErrors | null {
   styleUrl: './register.component.css',
 })
 export class RegisterComponent implements OnInit, OnDestroy {
-  private fb          = inject(FormBuilder);
+  private fb = inject(FormBuilder);
   private authService = inject(AuthService);
-  private router      = inject(Router);
-
-  countries:    any[] = [];
+  private router = inject(Router);
+  private zone = inject(NgZone);
+  countries: any[] = [];
   governorates: any[] = [];
-  cities:       any[] = [];
+  cities: any[] = [];
 
   isLoading = false;
-  showPass  = false;
+  showPass = false;
 
   // Toast state
   toast: { message: string; type: 'error' | 'success' } | null = null;
   toastProgress = 100;
-  private toastTimer:    ReturnType<typeof setTimeout>   | null = null;
-  private toastInterval: ReturnType<typeof setInterval>  | null = null;
+  private toastTimer: ReturnType<typeof setTimeout> | null = null;
+  private toastInterval: ReturnType<typeof setInterval> | null = null;
 
   // Track which fields have been submitted-touched (for submit-only validation)
   formSubmitted = false;
 
   private governoratesCache = new Map<number, any[]>();
-  private citiesCache       = new Map<number, any[]>();
+  private citiesCache = new Map<number, any[]>();
 
-  registerForm = this.fb.group({
-    firstName:       ['', Validators.required],
-    lastName:        ['', Validators.required],
-    email:           ['', [Validators.required, Validators.email]],
-    phone:           ['', Validators.required],
-    password:        ['', [Validators.required, Validators.minLength(8)]],
-    confirmPassword: ['', Validators.required],
-    countryId:       [''],
-    governorateId:   [{ value: '', disabled: true }],
-    cityId:          [{ value: '', disabled: true }],
-  }, { validators: passwordsMatch });
+  registerForm = this.fb.group(
+    {
+      firstName: ['', Validators.required],
+      lastName: ['', Validators.required],
+      email: ['', [Validators.required, Validators.email]],
+      phone: ['', Validators.required],
+      password: ['', [Validators.required, Validators.minLength(8)]],
+      confirmPassword: ['', Validators.required],
+      countryId: [''],
+      governorateId: [{ value: '', disabled: true }],
+      cityId: [{ value: '', disabled: true }],
+    },
+    { validators: passwordsMatch },
+  );
 
-  ngOnInit() { this.loadCountries(); }
+  ngOnInit() {
+    this.loadCountries();
+  }
 
-  ngOnDestroy() { this.clearToastTimers(); }
+  ngOnDestroy() {
+    this.clearToastTimers();
+  }
 
   // ── Helpers ──────────────────────────────────────────────
   // Show error only after submit attempt (not on blur)
   showError(field: string): boolean {
     if (!this.formSubmitted) return false;
     const ctrl = this.registerForm.get(field);
-    return !!(ctrl?.invalid);
+    return !!ctrl?.invalid;
   }
 
   showMismatch(): boolean {
     if (!this.formSubmitted) return false;
     const ctrl = this.registerForm.get('confirmPassword');
-    return !!(ctrl?.errors?.['mismatch']);
+    return !!ctrl?.errors?.['mismatch'];
   }
 
   // ── Toast ────────────────────────────────────────────────
   showToast(message: string, type: 'error' | 'success') {
     this.clearToastTimers();
-    this.toast         = { message, type };
+    this.toast = { message, type };
     this.toastProgress = 100;
 
-    const DURATION  = 5000; // ms
-    const TICK      = 50;   // ms — smooth bar
+    const DURATION = 5000; // ms
+    const TICK = 50; // ms — smooth bar
     const decrement = (TICK / DURATION) * 100;
 
     this.toastInterval = setInterval(() => {
-      this.toastProgress = Math.max(0, this.toastProgress - decrement);
+      this.zone.run(() => {
+        this.toastProgress = Math.max(0, this.toastProgress - decrement);
+      });
     }, TICK);
 
-    this.toastTimer = setTimeout(() => this.dismissToast(), DURATION);
+    this.toastTimer = setTimeout(() => {
+      this.zone.run(() => {
+        this.dismissToast();
+      });
+    }, DURATION);
   }
 
   dismissToast() {
     this.clearToastTimers();
-    this.toast         = null;
+    this.toast = null;
     this.toastProgress = 100;
   }
 
   private clearToastTimers() {
-    if (this.toastTimer)    { clearTimeout(this.toastTimer);    this.toastTimer    = null; }
-    if (this.toastInterval) { clearInterval(this.toastInterval); this.toastInterval = null; }
+    if (this.toastTimer) {
+      clearTimeout(this.toastTimer);
+      this.toastTimer = null;
+    }
+    if (this.toastInterval) {
+      clearInterval(this.toastInterval);
+      this.toastInterval = null;
+    }
   }
 
   // ── Countries ────────────────────────────────────────────
   private loadCountries() {
     this.authService.getCountries().subscribe({
-      next: (res: any) => { this.countries = res; this.prefetchGovernorates(res); },
+      next: (res: any) => {
+        this.countries = res;
+        this.prefetchGovernorates(res);
+      },
       error: () => this.showToast('تعذّر تحميل الدول، يرجى تحديث الصفحة.', 'error'),
     });
   }
@@ -125,7 +154,11 @@ export class RegisterComponent implements OnInit, OnDestroy {
       if (i >= countries.length) return;
       const c = countries[i++];
       this.authService.getGovernorates(c.id).subscribe({
-        next: (govs: any) => { this.governoratesCache.set(c.id, govs); this.prefetchCities(govs); next(); },
+        next: (govs: any) => {
+          this.governoratesCache.set(c.id, govs);
+          this.prefetchCities(govs);
+          next();
+        },
         error: () => next(),
       });
     };
@@ -139,7 +172,10 @@ export class RegisterComponent implements OnInit, OnDestroy {
       if (i >= governorates.length) return;
       const g = governorates[i++];
       this.authService.getCities(g.id).subscribe({
-        next: (cities: any) => { this.citiesCache.set(g.id, cities); next(); },
+        next: (cities: any) => {
+          this.citiesCache.set(g.id, cities);
+          next();
+        },
         error: () => next(),
       });
     };
@@ -150,7 +186,7 @@ export class RegisterComponent implements OnInit, OnDestroy {
   onCountryChange() {
     const id = Number(this.registerForm.get('countryId')?.value);
     this.governorates = [];
-    this.cities       = [];
+    this.cities = [];
     this.registerForm.get('governorateId')?.setValue('');
     this.registerForm.get('governorateId')?.disable();
     this.registerForm.get('cityId')?.setValue('');
@@ -185,7 +221,11 @@ export class RegisterComponent implements OnInit, OnDestroy {
       this.registerForm.get('cityId')?.enable();
     } else {
       this.authService.getCities(id).subscribe({
-        next: (res: any) => { this.citiesCache.set(id, res); this.cities = res; this.registerForm.get('cityId')?.enable(); },
+        next: (res: any) => {
+          this.citiesCache.set(id, res);
+          this.cities = res;
+          this.registerForm.get('cityId')?.enable();
+        },
         error: () => this.showToast('تعذّر تحميل المدن.', 'error'),
       });
     }
@@ -204,22 +244,37 @@ export class RegisterComponent implements OnInit, OnDestroy {
     this.isLoading = true;
     const form = this.registerForm.getRawValue();
 
-    this.authService.register({
-      firstName: form.firstName,
-      lastName:  form.lastName,
-      email:     form.email,
-      password:  form.password,
-      phone:     form.phone,
-      cityId:    Number(form.cityId),
-    }).subscribe({
-next: (res: any) => {
-  console.log(res);
-},
-      error: (err) => {
-        this.isLoading = false;
-        const msg = err.error?.message || 'حدث خطأ أثناء التسجيل، يرجى المحاولة مرة أخرى.';
-        this.showToast(msg, 'error');
-      },
-    });
+    this.authService
+      .register({
+        firstName: form.firstName,
+        lastName: form.lastName,
+        email: form.email,
+        password: form.password,
+        phone: form.phone,
+        cityId: Number(form.cityId),
+      })
+      .subscribe({
+        next: (res: any) => {
+          console.log('SUCCESS', res);
+
+          this.isLoading = false;
+
+          this.showToast('تم إنشاء الحساب بنجاح! جارٍ تحويلك لتسجيل الدخول...', 'success');
+
+          setTimeout(() => {
+            this.router.navigate(['/login']);
+          }, 2000);
+        },
+
+        error: (err) => {
+          console.log('ERROR', err);
+
+          this.isLoading = false;
+
+          const msg = err.error?.message || 'حدث خطأ أثناء التسجيل، يرجى المحاولة مرة أخرى.';
+
+          this.showToast(msg, 'error');
+        },
+      });
   }
 }
