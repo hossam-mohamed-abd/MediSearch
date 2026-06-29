@@ -1,7 +1,7 @@
 <!-- register.component.html -->
-<div class="register-page">
+<div class="register-page" >
 
-  <!-- ── Toast Notification ─────────────────────────────── -->
+  <!-- ── Toast Notification (center screen) ─────────────── -->
   @if(toast) {
     <div class="toast-overlay">
       <div class="toast" [class.toast-error]="toast.type === 'error'" [class.toast-success]="toast.type === 'success'">
@@ -26,7 +26,7 @@
     </div>
   }
 
-  <!-- ── Left Panel ─────────────────────────────────────── -->
+  <!-- ── Left Panel ──────────────────────────────────────── -->
   <div class="left-panel">
 
     <div class="panel-bg"></div>
@@ -80,7 +80,7 @@
     </div>
   </div>
 
-  <!-- ── Right Form ─────────────────────────────────────── -->
+  <!-- ── Right Form ───────────────────────────────────────── -->
   <div class="right-panel">
 
     <div class="orb orb-a"></div>
@@ -107,20 +107,20 @@
           <div class="two-col">
             <div class="field">
               <label for="firstName">الاسم الأول</label>
-              <div class="input-wrap" [class.invalid]="showError('firstName')">
+              <div class="input-wrap" [class.invalid]="registerForm.get('firstName')?.touched && registerForm.get('firstName')?.invalid">
                 <input id="firstName" type="text" placeholder="أحمد" formControlName="firstName" autocomplete="given-name" />
               </div>
-              @if(showError('firstName')) {
+              @if(registerForm.get('firstName')?.touched && registerForm.get('firstName')?.invalid) {
                 <span class="field-error"><i class="fa-solid fa-triangle-exclamation"></i> مطلوب</span>
               }
             </div>
 
             <div class="field">
               <label for="lastName">اسم العائلة</label>
-              <div class="input-wrap" [class.invalid]="showError('lastName')">
+              <div class="input-wrap" [class.invalid]="registerForm.get('lastName')?.touched && registerForm.get('lastName')?.invalid">
                 <input id="lastName" type="text" placeholder="محمد" formControlName="lastName" autocomplete="family-name" />
               </div>
-              @if(showError('lastName')) {
+              @if(registerForm.get('lastName')?.touched && registerForm.get('lastName')?.invalid) {
                 <span class="field-error"><i class="fa-solid fa-triangle-exclamation"></i> مطلوب</span>
               }
             </div>
@@ -128,22 +128,22 @@
 
           <div class="field">
             <label for="email">البريد الإلكتروني</label>
-            <div class="input-wrap" [class.invalid]="showError('email')">
+            <div class="input-wrap" [class.invalid]="registerForm.get('email')?.touched && registerForm.get('email')?.invalid">
               <i class="fa-regular fa-envelope field-icon"></i>
               <input id="email" type="email" placeholder="example@email.com" formControlName="email" autocomplete="email" />
             </div>
-            @if(showError('email')) {
+            @if(registerForm.get('email')?.touched && registerForm.get('email')?.invalid) {
               <span class="field-error"><i class="fa-solid fa-triangle-exclamation"></i> أدخل بريداً إلكترونياً صحيحاً</span>
             }
           </div>
 
           <div class="field">
             <label for="phone">رقم الهاتف</label>
-            <div class="input-wrap" [class.invalid]="showError('phone')">
+            <div class="input-wrap" [class.invalid]="registerForm.get('phone')?.touched && registerForm.get('phone')?.invalid">
               <i class="fa-solid fa-phone field-icon"></i>
               <input id="phone" type="tel" placeholder="01xxxxxxxxx" formControlName="phone" autocomplete="tel" />
             </div>
-            @if(showError('phone')) {
+            @if(registerForm.get('phone')?.touched && registerForm.get('phone')?.invalid) {
               <span class="field-error"><i class="fa-solid fa-triangle-exclamation"></i> مطلوب</span>
             }
           </div>
@@ -156,27 +156,25 @@
 
           <div class="field">
             <label for="password">كلمة المرور</label>
-            <div class="input-wrap" [class.invalid]="showError('password')">
+            <div class="input-wrap" [class.invalid]="registerForm.get('password')?.touched && registerForm.get('password')?.invalid">
               <i class="fa-solid fa-lock field-icon"></i>
               <input id="password" [type]="showPass ? 'text' : 'password'" placeholder="٨ أحرف على الأقل" formControlName="password" autocomplete="new-password" />
               <button type="button" class="toggle-pass" (click)="showPass = !showPass" tabindex="-1">
                 <i class="fa-regular" [class.fa-eye]="!showPass" [class.fa-eye-slash]="showPass"></i>
               </button>
             </div>
-            @if(showError('password')) {
+            @if(registerForm.get('password')?.touched && registerForm.get('password')?.invalid) {
               <span class="field-error"><i class="fa-solid fa-triangle-exclamation"></i> ٨ أحرف على الأقل</span>
             }
           </div>
 
           <div class="field">
             <label for="confirmPassword">تأكيد كلمة المرور</label>
-            <div class="input-wrap" [class.invalid]="showError('confirmPassword') || showMismatch()">
+            <div class="input-wrap" [class.invalid]="registerForm.get('confirmPassword')?.touched && registerForm.get('confirmPassword')?.invalid">
               <i class="fa-solid fa-lock field-icon"></i>
               <input id="confirmPassword" type="password" placeholder="أعد كتابة كلمة المرور" formControlName="confirmPassword" autocomplete="new-password" />
             </div>
-            @if(showMismatch()) {
-              <span class="field-error"><i class="fa-solid fa-triangle-exclamation"></i> كلمتا المرور غير متطابقتين</span>
-            } @else if(showError('confirmPassword')) {
+            @if(registerForm.get('confirmPassword')?.touched && registerForm.get('confirmPassword')?.invalid) {
               <span class="field-error"><i class="fa-solid fa-triangle-exclamation"></i> مطلوب</span>
             }
           </div>
@@ -189,7 +187,7 @@
 
           <div class="field">
             <label for="countryId">الدولة</label>
-            <div class="select-wrap" [class.invalid]="showError('countryId')">
+            <div class="select-wrap" [class.invalid]="registerForm.get('countryId')?.touched && registerForm.get('countryId')?.invalid">
               <i class="fa-solid fa-globe field-icon"></i>
               <select id="countryId" formControlName="countryId" (change)="onCountryChange()">
                 <option value="">اختر الدولة</option>
