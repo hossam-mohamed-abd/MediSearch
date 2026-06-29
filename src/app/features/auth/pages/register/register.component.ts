@@ -1,9 +1,11 @@
-import { Component, inject, OnInit, OnDestroy, NgZone } from '@angular/core';
+// register.component.ts
+import { Component, inject, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, ReactiveFormsModule, Validators, AbstractControl, ValidationErrors } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
 import { AuthService } from '../../../../core/services/auth.service';
 
+// Custom validator: passwords must match
 function passwordsMatch(control: AbstractControl): ValidationErrors | null {
   const pass    = control.get('password')?.value;
   const confirm = control.get('confirmPassword')?.value;
@@ -30,20 +32,22 @@ export class RegisterComponent implements OnInit, OnDestroy {
   private fb          = inject(FormBuilder);
   private authService = inject(AuthService);
   private router      = inject(Router);
-  private ngZone      = inject(NgZone);
 
   countries:    any[] = [];
   governorates: any[] = [];
   cities:       any[] = [];
 
-  isLoading     = false;
-  showPass      = false;
-  formSubmitted = false;
+  isLoading = false;
+  showPass  = false;
 
+  // Toast state
   toast: { message: string; type: 'error' | 'success' } | null = null;
   toastProgress = 100;
-  private toastTimer:    ReturnType<typeof setTimeout>  | null = null;
-  private toastInterval: ReturnType<typeof setInterval> | null = null;
+  private toastTimer:    ReturnType<typeof setTimeout>   | null = null;
+  private toastInterval: ReturnType<typeof setInterval>  | null = null;
+
+  // Track which fields have been submitted-touched (for submit-only validation)
+  formSubmitted = false;
 
   private governoratesCache = new Map<number, any[]>();
   private citiesCache       = new Map<number, any[]>();
@@ -60,37 +64,39 @@ export class RegisterComponent implements OnInit, OnDestroy {
     cityId:          [{ value: '', disabled: true }],
   }, { validators: passwordsMatch });
 
-  ngOnInit()    { this.loadCountries(); }
+  ngOnInit() { this.loadCountries(); }
+
   ngOnDestroy() { this.clearToastTimers(); }
 
+  // ── Helpers ──────────────────────────────────────────────
+  // Show error only after submit attempt (not on blur)
   showError(field: string): boolean {
     if (!this.formSubmitted) return false;
-    return !!this.registerForm.get(field)?.invalid;
+    const ctrl = this.registerForm.get(field);
+    return !!(ctrl?.invalid);
   }
 
   showMismatch(): boolean {
     if (!this.formSubmitted) return false;
-    return !!this.registerForm.get('confirmPassword')?.errors?.['mismatch'];
+    const ctrl = this.registerForm.get('confirmPassword');
+    return !!(ctrl?.errors?.['mismatch']);
   }
 
+  // ── Toast ────────────────────────────────────────────────
   showToast(message: string, type: 'error' | 'success') {
     this.clearToastTimers();
     this.toast         = { message, type };
     this.toastProgress = 100;
 
-    const DURATION  = 3000;
-    const TICK      = 30;
+    const DURATION  = 5000; // ms
+    const TICK      = 50;   // ms — smooth bar
     const decrement = (TICK / DURATION) * 100;
 
     this.toastInterval = setInterval(() => {
-      this.ngZone.run(() => {
-        this.toastProgress = Math.max(0, this.toastProgress - decrement);
-      });
+      this.toastProgress = Math.max(0, this.toastProgress - decrement);
     }, TICK);
 
-    this.toastTimer = setTimeout(() => {
-      this.ngZone.run(() => this.dismissToast());
-    }, DURATION);
+    this.toastTimer = setTimeout(() => this.dismissToast(), DURATION);
   }
 
   dismissToast() {
@@ -100,10 +106,11 @@ export class RegisterComponent implements OnInit, OnDestroy {
   }
 
   private clearToastTimers() {
-    if (this.toastTimer)    { clearTimeout(this.toastTimer);     this.toastTimer    = null; }
+    if (this.toastTimer)    { clearTimeout(this.toastTimer);    this.toastTimer    = null; }
     if (this.toastInterval) { clearInterval(this.toastInterval); this.toastInterval = null; }
   }
 
+  // ── Countries ────────────────────────────────────────────
   private loadCountries() {
     this.authService.getCountries().subscribe({
       next: (res: any) => { this.countries = res; this.prefetchGovernorates(res); },
@@ -139,6 +146,7 @@ export class RegisterComponent implements OnInit, OnDestroy {
     next();
   }
 
+  // ── Location ─────────────────────────────────────────────
   onCountryChange() {
     const id = Number(this.registerForm.get('countryId')?.value);
     this.governorates = [];
@@ -183,6 +191,7 @@ export class RegisterComponent implements OnInit, OnDestroy {
     }
   }
 
+  // ── Submit ───────────────────────────────────────────────
   register() {
     this.formSubmitted = true;
     this.registerForm.markAllAsTouched();
