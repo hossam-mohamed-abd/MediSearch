@@ -1,9 +1,23 @@
-// register.component.ts
-import { Component, inject, OnInit, OnDestroy } from '@angular/core';
+import { Component, inject, OnInit, OnDestroy, NgZone } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
+import { FormBuilder, ReactiveFormsModule, Validators, AbstractControl, ValidationErrors } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
 import { AuthService } from '../../../../core/services/auth.service';
+
+function passwordsMatch(control: AbstractControl): ValidationErrors | null {
+  const pass    = control.get('password')?.value;
+  const confirm = control.get('confirmPassword')?.value;
+  if (confirm && pass !== confirm) {
+    control.get('confirmPassword')?.setErrors({ mismatch: true });
+    return { mismatch: true };
+  }
+  if (confirm && pass === confirm) {
+    const errs = { ...control.get('confirmPassword')?.errors };
+    delete errs['mismatch'];
+    control.get('confirmPassword')?.setErrors(Object.keys(errs).length ? errs : null);
+  }
+  return null;
+}
 
 @Component({
   selector: 'app-register',
@@ -16,19 +30,20 @@ export class RegisterComponent implements OnInit, OnDestroy {
   private fb          = inject(FormBuilder);
   private authService = inject(AuthService);
   private router      = inject(Router);
+  private ngZone      = inject(NgZone);
 
   countries:    any[] = [];
   governorates: any[] = [];
   cities:       any[] = [];
 
-  isLoading = false;
-  showPass  = false;
+  isLoading     = false;
+  showPass      = false;
+  formSubmitted = false;
 
-  // Toast state
   toast: { message: string; type: 'error' | 'success' } | null = null;
   toastProgress = 100;
-  private toastTimer: any;
-  private toastInterval: any;
+  private toastTimer:    ReturnType<typeof setTimeout>  | null = null;
+  private toastInterval: ReturnType<typeof setInterval> | null = null;
 
   private governoratesCache = new Map<number, any[]>();
   private citiesCache       = new Map<number, any[]>();
@@ -40,45 +55,55 @@ export class RegisterComponent implements OnInit, OnDestroy {
     phone:           ['', Validators.required],
     password:        ['', [Validators.required, Validators.minLength(8)]],
     confirmPassword: ['', Validators.required],
-    countryId:       ['', Validators.required],
-    governorateId:   [{ value: '', disabled: true }, Validators.required],
-    cityId:          [{ value: '', disabled: true }, Validators.required],
-  });
+    countryId:       [''],
+    governorateId:   [{ value: '', disabled: true }],
+    cityId:          [{ value: '', disabled: true }],
+  }, { validators: passwordsMatch });
 
-  ngOnInit() { this.loadCountries(); }
-
+  ngOnInit()    { this.loadCountries(); }
   ngOnDestroy() { this.clearToastTimers(); }
 
-  // ── Toast ────────────────────────────────────────────────
+  showError(field: string): boolean {
+    if (!this.formSubmitted) return false;
+    return !!this.registerForm.get(field)?.invalid;
+  }
+
+  showMismatch(): boolean {
+    if (!this.formSubmitted) return false;
+    return !!this.registerForm.get('confirmPassword')?.errors?.['mismatch'];
+  }
+
   showToast(message: string, type: 'error' | 'success') {
     this.clearToastTimers();
-    this.toast = { message, type };
+    this.toast         = { message, type };
     this.toastProgress = 100;
 
-    const duration = 5000;
-    const step = 100;
-    const decrement = (step / duration) * 100;
+    const DURATION  = 3000;
+    const TICK      = 30;
+    const decrement = (TICK / DURATION) * 100;
 
     this.toastInterval = setInterval(() => {
-      this.toastProgress -= decrement;
-      if (this.toastProgress <= 0) this.dismissToast();
-    }, step);
+      this.ngZone.run(() => {
+        this.toastProgress = Math.max(0, this.toastProgress - decrement);
+      });
+    }, TICK);
 
-    this.toastTimer = setTimeout(() => this.dismissToast(), duration);
+    this.toastTimer = setTimeout(() => {
+      this.ngZone.run(() => this.dismissToast());
+    }, DURATION);
   }
 
   dismissToast() {
     this.clearToastTimers();
-    this.toast = null;
+    this.toast         = null;
     this.toastProgress = 100;
   }
 
   private clearToastTimers() {
-    clearTimeout(this.toastTimer);
-    clearInterval(this.toastInterval);
+    if (this.toastTimer)    { clearTimeout(this.toastTimer);     this.toastTimer    = null; }
+    if (this.toastInterval) { clearInterval(this.toastInterval); this.toastInterval = null; }
   }
 
-  // ── Countries ────────────────────────────────────────────
   private loadCountries() {
     this.authService.getCountries().subscribe({
       next: (res: any) => { this.countries = res; this.prefetchGovernorates(res); },
@@ -114,11 +139,10 @@ export class RegisterComponent implements OnInit, OnDestroy {
     next();
   }
 
-  // ── Location ─────────────────────────────────────────────
   onCountryChange() {
     const id = Number(this.registerForm.get('countryId')?.value);
     this.governorates = [];
-    this.cities = [];
+    this.cities       = [];
     this.registerForm.get('governorateId')?.setValue('');
     this.registerForm.get('governorateId')?.disable();
     this.registerForm.get('cityId')?.setValue('');
@@ -159,21 +183,17 @@ export class RegisterComponent implements OnInit, OnDestroy {
     }
   }
 
-  // ── Submit ────────────────────────────────────────────────
   register() {
+    this.formSubmitted = true;
     this.registerForm.markAllAsTouched();
+
     if (this.registerForm.invalid) {
       this.showToast('يرجى تعبئة جميع الحقول المطلوبة بشكل صحيح.', 'error');
       return;
     }
 
-    const form = this.registerForm.getRawValue();
-    if (form.password !== form.confirmPassword) {
-      this.showToast('كلمتا المرور غير متطابقتين.', 'error');
-      return;
-    }
-
     this.isLoading = true;
+    const form = this.registerForm.getRawValue();
 
     this.authService.register({
       firstName: form.firstName,
