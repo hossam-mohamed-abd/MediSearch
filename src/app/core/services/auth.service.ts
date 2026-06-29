@@ -1,16 +1,14 @@
-import { Injectable } from '@angular/core';
+import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { environment } from '../../../environments/environment';
-
-import { Observable } from 'rxjs';
 
 @Injectable({
   providedIn: 'root',
 })
 export class AuthService {
-  private api = environment.apiUrl;
+  private http = inject(HttpClient);
 
-  constructor(private http: HttpClient) {}
+  private api = environment.apiUrl;
 
   login(data: any) {
     return this.http.post(`${this.api}/auth/login`, data, {
@@ -39,18 +37,4 @@ export class AuthService {
       },
     );
   }
-
-  getCountries() {
-    return this.http.get(`${this.api}/countries`);
-  }
-
-  getGovernorates(countryId: number) {
-    return this.http.get(`${this.api}/governorates/${countryId}`);
-  }
-
-  getCities(governorateId: number) {
-    return this.http.get(`${this.api}/cities/${governorateId}`);
-  }
-
-  
 }
