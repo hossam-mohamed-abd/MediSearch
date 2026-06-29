@@ -21,13 +21,13 @@
       </h1>
 
       <p class="hero-desc">
-        Search medicines, locate nearby pharmacies, compare prices, and get AI-powered safety insights — all in one place.
+        Search medicines, locate nearby pharmacies, compare prices, and get AI-powered safety insights — all in one
+        place.
       </p>
 
       <!-- Search Section -->
-      <div class="hero-search-section"
-           [class.search-section--animating]="searchAnimating"
-           [class.search-section--returning]="searchReturning">
+      <div class="hero-search-section" [class.search-section--animating]="searchAnimating"
+        [class.search-section--returning]="searchReturning">
 
         <!-- Hint Note -->
         <div class="search-hint-note" [class.hint-visible]="showHint">
@@ -48,15 +48,13 @@
         <div class="hero-search">
           <div class="search-inner">
             <i class="fa-solid fa-magnifying-glass search-icon"></i>
-            <input
-              type="text"
-              placeholder="Search by name, active substance, company or pharmacy..."
-            />
+            <input type="text" placeholder="Search by name, active substance, company or pharmacy..." />
             <button class="search-btn">
               <i class="fa-solid fa-magnifying-glass"></i>
               <span>Search</span>
             </button>
           </div>
+
           <div class="search-tags" [class.tags-hidden]="searchAnimating">
             <span>Popular:</span>
             <a href="#">Panadol</a>
