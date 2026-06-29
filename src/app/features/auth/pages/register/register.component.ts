@@ -1,5 +1,5 @@
 // register.component.ts
-import { Component, inject, OnInit, OnDestroy } from '@angular/core';
+import { Component, inject, OnInit, OnDestroy, ChangeDetectorRef, NgZone } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import {
   FormBuilder,
@@ -10,7 +10,6 @@ import {
 } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
 import { AuthService } from '../../../../core/services/auth.service';
-import { NgZone } from '@angular/core';
 
 // Custom validator: passwords must match
 function passwordsMatch(control: AbstractControl): ValidationErrors | null {
@@ -39,6 +38,7 @@ export class RegisterComponent implements OnInit, OnDestroy {
   private fb = inject(FormBuilder);
   private authService = inject(AuthService);
   private router = inject(Router);
+  private cdr = inject(ChangeDetectorRef);
   private zone = inject(NgZone);
   countries: any[] = [];
   governorates: any[] = [];
@@ -99,30 +99,36 @@ export class RegisterComponent implements OnInit, OnDestroy {
   // ── Toast ────────────────────────────────────────────────
   showToast(message: string, type: 'error' | 'success') {
     this.clearToastTimers();
+
     this.toast = { message, type };
     this.toastProgress = 100;
 
-    const DURATION = 5000; // ms
-    const TICK = 50; // ms — smooth bar
+    this.cdr.detectChanges();
+
+    const DURATION = 5000;
+    const TICK = 50;
     const decrement = (TICK / DURATION) * 100;
 
     this.toastInterval = setInterval(() => {
       this.zone.run(() => {
         this.toastProgress = Math.max(0, this.toastProgress - decrement);
+
+        this.cdr.detectChanges();
       });
     }, TICK);
 
     this.toastTimer = setTimeout(() => {
       this.zone.run(() => {
         this.dismissToast();
+        this.cdr.detectChanges();
       });
     }, DURATION);
   }
-
   dismissToast() {
     this.clearToastTimers();
     this.toast = null;
     this.toastProgress = 100;
+    this.cdr.detectChanges();
   }
 
   private clearToastTimers() {
@@ -254,9 +260,7 @@ export class RegisterComponent implements OnInit, OnDestroy {
         cityId: Number(form.cityId),
       })
       .subscribe({
-        next: (res: any) => {
-          console.log('SUCCESS', res);
-
+        next: () => {
           this.isLoading = false;
 
           this.showToast('تم إنشاء الحساب بنجاح! جارٍ تحويلك لتسجيل الدخول...', 'success');
@@ -267,13 +271,12 @@ export class RegisterComponent implements OnInit, OnDestroy {
         },
 
         error: (err) => {
-          console.log('ERROR', err);
-
           this.isLoading = false;
 
           const msg = err.error?.message || 'حدث خطأ أثناء التسجيل، يرجى المحاولة مرة أخرى.';
 
           this.showToast(msg, 'error');
+          this.cdr.detectChanges();
         },
       });
   }
