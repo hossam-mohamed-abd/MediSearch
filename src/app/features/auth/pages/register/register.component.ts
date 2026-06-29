@@ -267,7 +267,7 @@ export class RegisterComponent implements OnInit, OnDestroy {
 
           setTimeout(() => {
             this.router.navigate(['/login']);
-          }, 2000);
+          }, 5000);
         },
 
         error: (err) => {
