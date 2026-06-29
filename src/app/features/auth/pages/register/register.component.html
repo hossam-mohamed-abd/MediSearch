@@ -1,11 +1,10 @@
+<!-- register.component.html -->
 <div class="register-page">
 
-  <!-- ── Toast ──────────────────────────────────────────── -->
+  <!-- ── Toast Notification ─────────────────────────────── -->
   @if(toast) {
     <div class="toast-overlay">
-      <div class="toast"
-           [class.toast-error]="toast.type === 'error'"
-           [class.toast-success]="toast.type === 'success'">
+      <div class="toast" [class.toast-error]="toast.type === 'error'" [class.toast-success]="toast.type === 'success'">
         <div class="toast-icon">
           @if(toast.type === 'error') {
             <i class="fa-solid fa-circle-exclamation"></i>
@@ -15,27 +14,27 @@
         </div>
         <div class="toast-body">
           <span class="toast-message">{{ toast.message }}</span>
-          <span class="toast-timer">Closing in a moment...</span>
+          <span class="toast-timer">سيتم الإغلاق خلال لحظات...</span>
         </div>
         <button class="toast-close" (click)="dismissToast()">
           <i class="fa-solid fa-xmark"></i>
         </button>
-        <div class="toast-progress"
-             [class.toast-progress-error]="toast.type === 'error'"
-             [class.toast-progress-success]="toast.type === 'success'">
+        <div class="toast-progress" [class.toast-progress-error]="toast.type === 'error'" [class.toast-progress-success]="toast.type === 'success'">
           <div class="toast-progress-bar" [style.width.%]="toastProgress"></div>
         </div>
       </div>
     </div>
   }
 
-  <!-- ── Left Panel ────────────────────────────────────── -->
+  <!-- ── Left Panel ─────────────────────────────────────── -->
   <div class="left-panel">
+
     <div class="panel-bg"></div>
     <div class="panel-orb panel-orb-1"></div>
     <div class="panel-orb panel-orb-2"></div>
 
     <div class="panel-content">
+
       <div class="brand">
         <div style="height: 200px">
           <img src="/images/logo.png" alt="logo">
@@ -77,152 +76,123 @@
           </div>
         </div>
       </div>
+
     </div>
   </div>
 
-  <!-- ── Right Form ────────────────────────────────────── -->
+  <!-- ── Right Form ─────────────────────────────────────── -->
   <div class="right-panel">
+
     <div class="orb orb-a"></div>
     <div class="orb orb-b"></div>
 
     <div class="form-scroll">
       <div class="glass-card register-card">
+
         <div class="card-accent"></div>
 
         <div class="card-header">
-          <h2>Create an account</h2>
-          <p>Enter your details to get started</p>
+          <h2>إنشاء حساب جديد</h2>
+          <p>أدخل بياناتك للبدء</p>
         </div>
 
         <form [formGroup]="registerForm" (ngSubmit)="register()">
 
-          <!-- Personal -->
+          <!-- Section: Personal -->
           <div class="form-section-label">
             <i class="fa-solid fa-user"></i>
-            Personal Information
+            البيانات الشخصية
           </div>
 
           <div class="two-col">
             <div class="field">
-              <label for="firstName">First Name</label>
+              <label for="firstName">الاسم الأول</label>
               <div class="input-wrap" [class.invalid]="showError('firstName')">
-                <input id="firstName" type="text" placeholder="Ahmed"
-                       formControlName="firstName" autocomplete="given-name" />
+                <input id="firstName" type="text" placeholder="أحمد" formControlName="firstName" autocomplete="given-name" />
               </div>
               @if(showError('firstName')) {
-                <span class="field-error">
-                  <i class="fa-solid fa-triangle-exclamation"></i> مطلوب
-                </span>
+                <span class="field-error"><i class="fa-solid fa-triangle-exclamation"></i> مطلوب</span>
               }
             </div>
 
             <div class="field">
-              <label for="lastName">Last Name</label>
+              <label for="lastName">اسم العائلة</label>
               <div class="input-wrap" [class.invalid]="showError('lastName')">
-                <input id="lastName" type="text" placeholder="Mohamed"
-                       formControlName="lastName" autocomplete="family-name" />
+                <input id="lastName" type="text" placeholder="محمد" formControlName="lastName" autocomplete="family-name" />
               </div>
               @if(showError('lastName')) {
-                <span class="field-error">
-                  <i class="fa-solid fa-triangle-exclamation"></i> مطلوب
-                </span>
+                <span class="field-error"><i class="fa-solid fa-triangle-exclamation"></i> مطلوب</span>
               }
             </div>
           </div>
 
           <div class="field">
-            <label for="email">Email Address</label>
-            <div class="input-wrap" [class.invalid]="showError('email') || emailExists">
+            <label for="email">البريد الإلكتروني</label>
+            <div class="input-wrap" [class.invalid]="showError('email')">
               <i class="fa-regular fa-envelope field-icon"></i>
-              <input id="email" type="email" placeholder="example@email.com"
-                     formControlName="email" autocomplete="email"
-                     (blur)="onEmailBlur()" />
-              @if(emailChecking) {
-                <i class="fa-solid fa-spinner fa-spin field-icon" style="margin-right:8px"></i>
-              }
+              <input id="email" type="email" placeholder="example@email.com" formControlName="email" autocomplete="email" />
             </div>
-            @if(emailExists) {
-              <span class="field-error">
-                <i class="fa-solid fa-triangle-exclamation"></i> البريد الإلكتروني مسجل بالفعل
-              </span>
-            } @else if(showError('email')) {
-              <span class="field-error">
-                <i class="fa-solid fa-triangle-exclamation"></i> أدخل بريداً إلكترونياً صحيحاً
-              </span>
+            @if(showError('email')) {
+              <span class="field-error"><i class="fa-solid fa-triangle-exclamation"></i> أدخل بريداً إلكترونياً صحيحاً</span>
             }
           </div>
 
           <div class="field">
-            <label for="phone">Phone Number</label>
+            <label for="phone">رقم الهاتف</label>
             <div class="input-wrap" [class.invalid]="showError('phone')">
               <i class="fa-solid fa-phone field-icon"></i>
-              <input id="phone" type="tel" placeholder="01xxxxxxxxx"
-                     formControlName="phone" autocomplete="tel" />
+              <input id="phone" type="tel" placeholder="01xxxxxxxxx" formControlName="phone" autocomplete="tel" />
             </div>
             @if(showError('phone')) {
-              <span class="field-error">
-                <i class="fa-solid fa-triangle-exclamation"></i> مطلوب
-              </span>
+              <span class="field-error"><i class="fa-solid fa-triangle-exclamation"></i> مطلوب</span>
             }
           </div>
 
-          <!-- Security -->
+          <!-- Section: Security -->
           <div class="form-section-label">
             <i class="fa-solid fa-shield-halved"></i>
-            Security
+            الأمان
           </div>
 
           <div class="field">
-            <label for="password">Password</label>
+            <label for="password">كلمة المرور</label>
             <div class="input-wrap" [class.invalid]="showError('password')">
               <i class="fa-solid fa-lock field-icon"></i>
-              <input id="password" [type]="showPass ? 'text' : 'password'"
-                     placeholder="At least 8 characters"
-                     formControlName="password" autocomplete="new-password" />
-              <button type="button" class="toggle-pass"
-                      (click)="showPass = !showPass" tabindex="-1">
+              <input id="password" [type]="showPass ? 'text' : 'password'" placeholder="٨ أحرف على الأقل" formControlName="password" autocomplete="new-password" />
+              <button type="button" class="toggle-pass" (click)="showPass = !showPass" tabindex="-1">
                 <i class="fa-regular" [class.fa-eye]="!showPass" [class.fa-eye-slash]="showPass"></i>
               </button>
             </div>
             @if(showError('password')) {
-              <span class="field-error">
-                <i class="fa-solid fa-triangle-exclamation"></i> ٨ أحرف على الأقل
-              </span>
+              <span class="field-error"><i class="fa-solid fa-triangle-exclamation"></i> ٨ أحرف على الأقل</span>
             }
           </div>
 
           <div class="field">
-            <label for="confirmPassword">Confirm Password</label>
-            <div class="input-wrap"
-                 [class.invalid]="showError('confirmPassword') || showMismatch()">
+            <label for="confirmPassword">تأكيد كلمة المرور</label>
+            <div class="input-wrap" [class.invalid]="showError('confirmPassword') || showMismatch()">
               <i class="fa-solid fa-lock field-icon"></i>
-              <input id="confirmPassword" type="password"
-                     placeholder="Re-enter your password"
-                     formControlName="confirmPassword" autocomplete="new-password" />
+              <input id="confirmPassword" type="password" placeholder="أعد كتابة كلمة المرور" formControlName="confirmPassword" autocomplete="new-password" />
             </div>
             @if(showMismatch()) {
-              <span class="field-error">
-                <i class="fa-solid fa-triangle-exclamation"></i> كلمتا المرور غير متطابقتين
-              </span>
+              <span class="field-error"><i class="fa-solid fa-triangle-exclamation"></i> كلمتا المرور غير متطابقتين</span>
             } @else if(showError('confirmPassword')) {
-              <span class="field-error">
-                <i class="fa-solid fa-triangle-exclamation"></i> مطلوب
-              </span>
+              <span class="field-error"><i class="fa-solid fa-triangle-exclamation"></i> مطلوب</span>
             }
           </div>
 
-          <!-- Location -->
+          <!-- Section: Location -->
           <div class="form-section-label">
             <i class="fa-solid fa-location-dot"></i>
-            Location
+            الموقع
           </div>
 
           <div class="field">
-            <label for="countryId">Country</label>
+            <label for="countryId">الدولة</label>
             <div class="select-wrap" [class.invalid]="showError('countryId')">
               <i class="fa-solid fa-globe field-icon"></i>
               <select id="countryId" formControlName="countryId" (change)="onCountryChange()">
-                <option value="">Select country</option>
+                <option value="">اختر الدولة</option>
                 @for(country of countries; track country.id) {
                   <option [value]="country.id">{{ country.name }}</option>
                 }
@@ -233,13 +203,11 @@
 
           <div class="two-col">
             <div class="field">
-              <label for="governorateId">Governorate</label>
-              <div class="select-wrap"
-                   [class.disabled]="registerForm.get('governorateId')?.disabled">
+              <label for="governorateId">المحافظة</label>
+              <div class="select-wrap" [class.disabled]="registerForm.get('governorateId')?.disabled">
                 <i class="fa-solid fa-map field-icon"></i>
-                <select id="governorateId" formControlName="governorateId"
-                        (change)="onGovernorateChange()">
-                  <option value="">Select governorate</option>
+                <select id="governorateId" formControlName="governorateId" (change)="onGovernorateChange()">
+                  <option value="">اختر المحافظة</option>
                   @for(gov of governorates; track gov.id) {
                     <option [value]="gov.id">{{ gov.name }}</option>
                   }
@@ -249,12 +217,11 @@
             </div>
 
             <div class="field">
-              <label for="cityId">City</label>
-              <div class="select-wrap"
-                   [class.disabled]="registerForm.get('cityId')?.disabled">
+              <label for="cityId">المدينة</label>
+              <div class="select-wrap" [class.disabled]="registerForm.get('cityId')?.disabled">
                 <i class="fa-solid fa-city field-icon"></i>
                 <select id="cityId" formControlName="cityId">
-                  <option value="">Select city</option>
+                  <option value="">اختر المدينة</option>
                   @for(city of cities; track city.id) {
                     <option [value]="city.id">{{ city.name }}</option>
                   }
@@ -267,12 +234,12 @@
           <!-- Submit -->
           <button class="submit-btn" type="submit" [disabled]="isLoading">
             <span class="btn-content" [class.hidden]="isLoading">
-              Create Account
-              <i class="fa-solid fa-arrow-right"></i>
+              إنشاء الحساب
+              <i class="fa-solid fa-arrow-left"></i>
             </span>
             <span class="btn-loader" [class.visible]="isLoading">
               <i class="fa-solid fa-spinner fa-spin"></i>
-              Creating account...
+              جارٍ إنشاء الحساب...
             </span>
             <div class="btn-shine"></div>
           </button>
@@ -280,8 +247,8 @@
         </form>
 
         <p class="switch-link">
-          Already have an account?
-          <a routerLink="/login">Sign in</a>
+          لديك حساب بالفعل؟
+          <a routerLink="/login">تسجيل الدخول</a>
         </p>
 
       </div>
