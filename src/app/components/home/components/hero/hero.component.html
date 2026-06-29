@@ -1,7 +1,6 @@
 <!-- hero.component.html -->
-<section class="hero">
+<section class="hero" [class.hero-dimmed]="searchAnimating">
   <div class="hero-bg">
-    <div class="hero-grid"></div>
     <div class="hero-orb hero-orb-1"></div>
     <div class="hero-orb hero-orb-2"></div>
   </div>
@@ -18,46 +17,62 @@
       <h1 class="hero-title">
         Find Any Medicine,<br>
         <span class="gradient-text">Compare Prices</span><br>
-        & AI Alternatives.
+        &amp; AI Alternatives.
       </h1>
 
       <p class="hero-desc">
         Search medicines, locate nearby pharmacies, compare prices, and get AI-powered safety insights — all in one place.
       </p>
 
-      <!-- Search -->
-      <div class="hero-search">
-        <div class="search-inner">
-          <i class="fa-solid fa-magnifying-glass"></i>
-          <input type="text" placeholder="Search by medicine name or active substance..." />
-          <button class="search-btn">Search</button>
+      <!-- Search Section -->
+      <div class="hero-search-section"
+           [class.search-section--animating]="searchAnimating"
+           [class.search-section--returning]="searchReturning">
+
+        <!-- Hint Note -->
+        <div class="search-hint-note" [class.hint-visible]="showHint">
+          <div class="hint-inner">
+            <span class="hint-bulb">💡</span>
+            <div class="hint-text">
+              <strong>ابحث بأي طريقة تعرفها</strong>
+              <span>اسم الدواء، المادة الفعّالة، الشركة المنتجة، أو الصيدلية</span>
+            </div>
+            <button class="hint-close" (click)="dismissHint()">
+              <i class="fa-solid fa-xmark"></i>
+            </button>
+          </div>
+          <div class="hint-timer-bar"></div>
         </div>
-        <div class="search-tags">
-          <span>Popular:</span>
-          <a href="#">Panadol</a>
-          <a href="#">Augmentin</a>
-          <a href="#">Brufen</a>
+
+        <!-- Search -->
+        <div class="hero-search">
+          <div class="search-inner">
+            <i class="fa-solid fa-magnifying-glass search-icon"></i>
+            <input
+              type="text"
+              placeholder="Search by name, active substance, company or pharmacy..."
+            />
+            <button class="search-btn">
+              <i class="fa-solid fa-magnifying-glass"></i>
+              <span>Search</span>
+            </button>
+          </div>
+          <div class="search-tags" [class.tags-hidden]="searchAnimating">
+            <span>Popular:</span>
+            <a href="#">Panadol</a>
+            <a href="#">Augmentin</a>
+            <a href="#">Brufen</a>
+          </div>
         </div>
+
       </div>
 
       <!-- Feature Pills -->
       <div class="hero-features">
-        <div class="feature-pill">
-          <i class="fa-solid fa-location-dot"></i>
-          Nearby Pharmacies
-        </div>
-        <div class="feature-pill">
-          <i class="fa-solid fa-money-bill-wave"></i>
-          Price Comparison
-        </div>
-        <div class="feature-pill">
-          <i class="fa-solid fa-robot"></i>
-          AI Alternatives
-        </div>
-        <div class="feature-pill">
-          <i class="fa-solid fa-shield-heart"></i>
-          Drug Safety
-        </div>
+        <div class="feature-pill"><i class="fa-solid fa-location-dot"></i>Nearby Pharmacies</div>
+        <div class="feature-pill"><i class="fa-solid fa-money-bill-wave"></i>Price Comparison</div>
+        <div class="feature-pill"><i class="fa-solid fa-robot"></i>AI Alternatives</div>
+        <div class="feature-pill"><i class="fa-solid fa-shield-heart"></i>Drug Safety</div>
       </div>
 
       <!-- Buttons -->
@@ -75,12 +90,9 @@
 
     <!-- Right Cards -->
     <div class="hero-cards">
-
       <div class="hero-card card-medicine">
         <div class="card-header">
-          <div class="medicine-img-placeholder">
-            <i class="fa-solid fa-pills"></i>
-          </div>
+          <div class="medicine-img-placeholder"><i class="fa-solid fa-pills"></i></div>
           <div>
             <h3>Panadol Extra</h3>
             <span class="card-badge available">In Stock</span>
@@ -124,7 +136,6 @@
           <p class="safe-text"><i class="fa-solid fa-circle-check"></i> No harmful interactions found</p>
         </div>
       </div>
-
     </div>
   </div>
 </section>
