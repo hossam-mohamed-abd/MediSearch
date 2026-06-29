@@ -88,6 +88,7 @@
   display: flex;
   align-items: center;
   gap: 10px;
+  margin-bottom: 52px;
 }
 
 .left-panel .brand-mark {
@@ -320,6 +321,31 @@
 .card-header p {
   font-size: 14px;
   color: #64748B;
+}
+
+/* ── Alert ───────────────────────────────────────────────── */
+
+.alert {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 16px;
+  border-radius: 12px;
+  font-size: 13.5px;
+  font-weight: 500;
+  margin-bottom: 20px;
+  animation: error-in 0.25s ease;
+}
+
+.alert-error {
+  background: rgba(239, 68, 68, 0.08);
+  border: 1px solid rgba(239, 68, 68, 0.25);
+  color: #DC2626;
+}
+
+.alert-error i {
+  font-size: 15px;
+  flex-shrink: 0;
 }
 
 /* ── Section Label ───────────────────────────────────────── */

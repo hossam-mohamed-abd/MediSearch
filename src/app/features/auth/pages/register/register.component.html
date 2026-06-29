@@ -64,7 +64,6 @@
   <!-- ── Right Form ───────────────────────────────────────── -->
   <div class="right-panel">
 
-    <!-- Soft orbs only — no grid -->
     <div class="orb orb-a"></div>
     <div class="orb orb-b"></div>
 
@@ -77,6 +76,14 @@
           <h2>Create your account</h2>
           <p>Fill in the details below to get started</p>
         </div>
+
+        <!-- Error Alert -->
+        @if(errorMessage) {
+          <div class="alert alert-error">
+            <i class="fa-solid fa-circle-exclamation"></i>
+            <span>{{ errorMessage }}</span>
+          </div>
+        }
 
         <form [formGroup]="registerForm" (ngSubmit)="register()">
 

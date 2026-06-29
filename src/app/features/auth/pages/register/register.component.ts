@@ -21,8 +21,10 @@ export class RegisterComponent implements OnInit {
   governorates: any[] = [];
   cities:       any[] = [];
 
-  isLoading = false;
-  showPass  = false;
+  isLoading    = false;
+  showPass     = false;
+  errorMessage = '';
+  successMessage = '';
 
   private governoratesCache = new Map<number, any[]>();
   private citiesCache       = new Map<number, any[]>();
@@ -56,7 +58,6 @@ export class RegisterComponent implements OnInit {
   private prefetchGovernorates(countries: any[]) {
     if (!countries?.length) return;
     let index = 0;
-
     const loadNext = () => {
       if (index >= countries.length) return;
       const country = countries[index++];
@@ -69,14 +70,12 @@ export class RegisterComponent implements OnInit {
         error: () => loadNext(),
       });
     };
-
     loadNext();
   }
 
   private prefetchCities(governorates: any[]) {
     if (!governorates?.length) return;
     let index = 0;
-
     const loadNext = () => {
       if (index >= governorates.length) return;
       const gov = governorates[index++];
@@ -88,21 +87,17 @@ export class RegisterComponent implements OnInit {
         error: () => loadNext(),
       });
     };
-
     loadNext();
   }
 
   onCountryChange() {
     const countryId = Number(this.registerForm.get('countryId')?.value);
-
-    // Reset dependents
     this.governorates = [];
     this.cities       = [];
     this.registerForm.get('governorateId')?.setValue('');
     this.registerForm.get('governorateId')?.disable();
     this.registerForm.get('cityId')?.setValue('');
     this.registerForm.get('cityId')?.disable();
-
     if (!countryId) return;
 
     if (this.governoratesCache.has(countryId)) {
@@ -123,12 +118,9 @@ export class RegisterComponent implements OnInit {
 
   onGovernorateChange() {
     const governorateId = Number(this.registerForm.get('governorateId')?.value);
-
-    // Reset city
     this.cities = [];
     this.registerForm.get('cityId')?.setValue('');
     this.registerForm.get('cityId')?.disable();
-
     if (!governorateId) return;
 
     if (this.citiesCache.has(governorateId)) {
@@ -147,19 +139,21 @@ export class RegisterComponent implements OnInit {
   }
 
   register() {
-    if (this.registerForm.invalid) {
-      this.registerForm.markAllAsTouched();
-      return;
-    }
+    // Show validation errors immediately
+    this.registerForm.markAllAsTouched();
+
+    if (this.registerForm.invalid) return;
 
     const form = this.registerForm.getRawValue();
 
     if (form.password !== form.confirmPassword) {
-      alert('Passwords do not match');
+      this.errorMessage = 'Passwords do not match';
       return;
     }
 
-    this.isLoading = true;
+    this.isLoading    = true;
+    this.errorMessage = '';
+    this.successMessage = '';
 
     this.authService.register({
       firstName: form.firstName,
@@ -169,8 +163,14 @@ export class RegisterComponent implements OnInit {
       phone:     form.phone,
       cityId:    Number(form.cityId),
     }).subscribe({
-      next:  () => { this.isLoading = false; this.router.navigate(['/']); },
-      error: (err) => { this.isLoading = false; console.error(err); },
+      next: () => {
+        this.isLoading = false;
+        this.router.navigate(['/login']);
+      },
+      error: (err) => {
+        this.isLoading    = false;
+        this.errorMessage = err.error?.message || 'Registration failed. Please try again.';
+      },
     });
   }
 }
