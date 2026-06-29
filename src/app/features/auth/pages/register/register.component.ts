@@ -212,11 +212,9 @@ export class RegisterComponent implements OnInit, OnDestroy {
       phone:     form.phone,
       cityId:    Number(form.cityId),
     }).subscribe({
-      next: () => {
-        this.isLoading = false;
-        this.showToast('تم إنشاء الحساب بنجاح! جارٍ تحويلك لتسجيل الدخول...', 'success');
-        setTimeout(() => this.router.navigate(['/login']), 2000);
-      },
+next: (res: any) => {
+  console.log(res);
+},
       error: (err) => {
         this.isLoading = false;
         const msg = err.error?.message || 'حدث خطأ أثناء التسجيل، يرجى المحاولة مرة أخرى.';
