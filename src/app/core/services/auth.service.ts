@@ -52,5 +52,7 @@ export class AuthService {
     return this.http.get(`${this.api}/cities/${governorateId}`);
   }
 
-  
+  checkEmail(email: string): Observable<any> {
+    return this.http.post(`${this.api}/auth/check-email`, { email });
+  }
 }
