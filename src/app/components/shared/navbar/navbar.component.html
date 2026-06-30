@@ -1,11 +1,7 @@
-<!-- navbar.component.html -->
-
-<!-- الـ wrapper ده هو اللي بيخلي الـ navbar تعوم في النص بعرض 80% -->
 <div class="navbar-wrapper">
 
   <nav class="navbar" [class.scrolled]="isScrolled">
 
-    <!-- ── الصف الرئيسي ── -->
     <div class="navbar-inner">
 
       <!-- Logo -->
@@ -18,18 +14,23 @@
 
       <!-- Links -->
       <ul class="nav-links">
-        <li><a routerLink="/"        routerLinkActive="active" [routerLinkActiveOptions]="{exact:true}" class="nav-link"><i class="fa-solid fa-house"></i><span>Home</span></a></li>
-        <li><a routerLink="/medicines"   routerLinkActive="active" class="nav-link"><i class="fa-solid fa-pills"></i><span>Medicines</span></a></li>
-        <li><a routerLink="/pharmacies"  routerLinkActive="active" class="nav-link"><i class="fa-solid fa-hospital"></i><span>Pharmacies</span></a></li>
-        <li><a routerLink="/categories"  routerLinkActive="active" class="nav-link"><i class="fa-solid fa-layer-group"></i><span>Categories</span></a></li>
-        <li><a routerLink="/trending"    routerLinkActive="active" class="nav-link"><i class="fa-solid fa-fire"></i><span>Trending</span></a></li>
-        <li><a routerLink="/compare"     routerLinkActive="active" class="nav-link"><i class="fa-solid fa-scale-balanced"></i><span>Compare</span></a></li>
+        <li><a routerLink="/"           routerLinkActive="active" [routerLinkActiveOptions]="{exact:true}" class="nav-link"><i class="fa-solid fa-house"></i><span>Home</span></a></li>
+        <li><a routerLink="/medicines"  routerLinkActive="active" class="nav-link"><i class="fa-solid fa-pills"></i><span>Medicines</span></a></li>
+        <li><a routerLink="/pharmacies" routerLinkActive="active" class="nav-link"><i class="fa-solid fa-hospital"></i><span>Pharmacies</span></a></li>
+        <li><a routerLink="/categories" routerLinkActive="active" class="nav-link"><i class="fa-solid fa-layer-group"></i><span>Categories</span></a></li>
+        <li><a routerLink="/trending"   routerLinkActive="active" class="nav-link"><i class="fa-solid fa-fire"></i><span>Trending</span></a></li>
+        <li><a routerLink="/compare"    routerLinkActive="active" class="nav-link"><i class="fa-solid fa-scale-balanced"></i><span>Compare</span></a></li>
       </ul>
 
-      <!-- Search -->
-      <div class="search-box">
+      <!-- Search box — #navSearchBox للـ FLIP -->
+      <div class="search-box" #navSearchBox (click)="openSearch()">
         <i class="fa-solid fa-magnifying-glass search-icon"></i>
-        <input type="text" placeholder="Search medicines..." />
+        <input
+          type="text"
+          placeholder="Search medicines..."
+          readonly
+          style="cursor: pointer;"
+        />
       </div>
 
       <!-- Actions -->
@@ -50,33 +51,17 @@
         <!-- Language -->
         <button class="lang-btn">AR</button>
 
-        <!-- Auth Section -->
+        <!-- Auth -->
         <div class="auth-section">
-
           @if (!isLoggedIn) {
-
-            @if (currentUrl === '/login') {
-              <a routerLink="/register">
-                <button class="signup-btn">Sign Up</button>
-              </a>
-            } @else if (currentUrl === '/register') {
-              <a routerLink="/login">
-                <button class="signup-btn">Login</button>
-              </a>
+            @if (currentUrl === '/register') {
+              <a routerLink="/login"><button class="signup-btn">Login</button></a>
             } @else {
-              <a routerLink="/login">
-                <button class="signup-btn">Login</button>
-              </a>
+              <a routerLink="/login"><button class="signup-btn">Login</button></a>
             }
-
           } @else {
-
-            <!-- Profile -->
             <div class="profile-wrapper">
-
               <div class="profile-menu" (click)="toggleProfileMenu()">
-
-                <!-- Avatar: صورة لو موجودة، أحرف لو مش موجودة -->
                 @if (user.profile_image) {
                   <img [src]="user.profile_image" alt="profile" class="avatar-img" />
                 } @else {
@@ -84,7 +69,6 @@
                     {{ user.first_name?.charAt(0) }}{{ user.last_name?.charAt(0) }}
                   </div>
                 }
-
                 <div class="user-info">
                   <span class="name">{{ user.first_name }} {{ user.last_name }}</span>
                   <span class="role">{{ user.role }}</span>
@@ -92,9 +76,7 @@
                 <i class="fa-solid fa-chevron-down"></i>
               </div>
 
-              <!-- Dropdown -->
               <div class="profile-dropdown" [class.show]="isProfileOpen">
-
                 <div class="dropdown-header">
                   @if (user.profile_image) {
                     <img [src]="user.profile_image" alt="" class="avatar-img" />
@@ -108,33 +90,21 @@
                     <p>{{ user.email }}</p>
                   </div>
                 </div>
-
-                <a routerLink="/profile">
-                  <i class="fa-regular fa-user"></i>Profile
-                </a>
-                <a routerLink="/favorites">
-                  <i class="fa-regular fa-heart"></i>Favorites
-                </a>
-                <a routerLink="/notifications">
-                  <i class="fa-regular fa-bell"></i>Notifications
-                </a>
-                <a routerLink="/history">
-                  <i class="fa-solid fa-clock-rotate-left"></i>Search History
-                </a>
-                <a routerLink="/settings">
-                  <i class="fa-solid fa-gear"></i>Settings
-                </a>
-                <a class="logout" (click)="logout()">
-                  <i class="fa-solid fa-right-from-bracket"></i>Logout
-                </a>
-
+                <a routerLink="/profile"><i class="fa-regular fa-user"></i>Profile</a>
+                <a routerLink="/favorites"><i class="fa-regular fa-heart"></i>Favorites</a>
+                <a routerLink="/notifications"><i class="fa-regular fa-bell"></i>Notifications</a>
+                <a routerLink="/history"><i class="fa-solid fa-clock-rotate-left"></i>Search History</a>
+                <a routerLink="/settings"><i class="fa-solid fa-gear"></i>Settings</a>
+                <a class="logout" (click)="logout()"><i class="fa-solid fa-right-from-bracket"></i>Logout</a>
               </div>
-
             </div>
-
           }
-
         </div>
+
+        <!-- Mobile search icon -->
+        <button class="icon-btn mobile-search-btn" (click)="openSearch()" aria-label="Search">
+          <i class="fa-solid fa-magnifying-glass"></i>
+        </button>
 
         <!-- Mobile menu toggle -->
         <button class="menu-btn" (click)="toggleMenu()" aria-label="Menu">
@@ -145,17 +115,10 @@
         </button>
 
       </div>
-
     </div>
 
-    <!-- ── Mobile Menu ── -->
+    <!-- Mobile Menu -->
     <div class="mobile-menu" [class.show]="isMenuOpen">
-
-      <div class="mobile-search">
-        <i class="fa-solid fa-magnifying-glass"></i>
-        <input type="text" placeholder="Search medicines..." />
-      </div>
-
       <div class="mobile-links">
         <a routerLink="/"           (click)="toggleMenu()"><i class="fa-solid fa-house"></i>Home</a>
         <a routerLink="/medicines"  (click)="toggleMenu()"><i class="fa-solid fa-pills"></i>Medicines</a>
@@ -166,9 +129,16 @@
         <a routerLink="/favorites"  (click)="toggleMenu()"><i class="fa-regular fa-heart"></i>Favorites</a>
         <a routerLink="/profile"    (click)="toggleMenu()"><i class="fa-regular fa-user"></i>Profile</a>
       </div>
-
     </div>
 
   </nav>
 
 </div>
+
+<!-- Search Overlay — خارج الـ navbar-wrapper عشان z-index يشتغل صح -->
+@if (showSearchOverlay) {
+  <app-search-overlay
+    [heroSearchRect]="heroSearchRect"
+    (closed)="closeSearch()"
+  />
+}

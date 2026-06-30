@@ -619,3 +619,31 @@
   .navbar-wrapper .user-info { display: none; }
   .navbar-wrapper .lang-btn { display: none; }
 }
+
+.navbar-wrapper .search-box {
+  cursor: pointer;
+}
+
+.navbar-wrapper .search-box:hover {
+  border-color: rgba(14, 165, 233, 0.35);
+  background: rgba(14, 165, 233, 0.08);
+}
+
+.navbar-wrapper .search-box:hover .search-icon {
+  color: #38BDF8;
+}
+
+.navbar-wrapper .mobile-search-btn {
+  display: none;
+}
+
+@media (max-width: 1024px) {
+  .navbar-wrapper .mobile-search-btn {
+    display: flex;
+  }
+}
+
+/* شيل الـ mobile-search القديم من الـ mobile menu لأننا بقينا بنفتح overlay */
+.navbar-wrapper .mobile-search {
+  display: none;
+}

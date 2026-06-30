@@ -1,12 +1,13 @@
-import { Component, OnInit, inject, HostListener } from '@angular/core';
+import { Component, OnInit, inject, HostListener, ViewChild, ElementRef } from '@angular/core';
 import { Router, RouterLink, RouterLinkActive, NavigationEnd } from '@angular/router';
 import { filter } from 'rxjs';
 import { AuthService } from '../../../core/services/auth.service';
 import { AuthStateService } from '../../../core/services/auth-state';
+import { SearchOverlayComponent } from '../search-overlay/search-overlay.component';
 
 @Component({
   selector: 'app-navbar',
-  imports: [RouterLink, RouterLinkActive],
+  imports: [RouterLink, RouterLinkActive, SearchOverlayComponent],
   templateUrl: './navbar.component.html',
   styleUrl: './navbar.component.css',
 })
@@ -15,32 +16,34 @@ export class NavbarComponent implements OnInit {
   private router      = inject(Router);
   private authState   = inject(AuthStateService);
 
-  isScrolled    = false;
-  isMenuOpen    = false;
-  isProfileOpen = false;
-  currentUrl    = '';
-  isLoggedIn    = false;
-  user: any     = null;
+  @ViewChild('navSearchBox') navSearchBoxRef!: ElementRef<HTMLDivElement>;
+
+  isScrolled        = false;
+  isMenuOpen        = false;
+  isProfileOpen     = false;
+  currentUrl        = '';
+  isLoggedIn        = false;
+  user: any         = null;
+  showSearchOverlay = false;
+  heroSearchRect: DOMRect | null = null;
 
   ngOnInit() {
     this.currentUrl = this.router.url;
 
-    // نغلق الـ menus عند تغيير الـ route
     this.router.events
       .pipe(filter((e) => e instanceof NavigationEnd))
       .subscribe(() => {
-        this.currentUrl    = this.router.url;
-        this.isMenuOpen    = false;
-        this.isProfileOpen = false;
+        this.currentUrl       = this.router.url;
+        this.isMenuOpen       = false;
+        this.isProfileOpen    = false;
+        this.showSearchOverlay = false;
       });
 
-    // subscribe — بيشتغل فوراً بالـ cached value من localStorage
     this.authState.user$.subscribe((user) => {
-      this.user      = user;
+      this.user       = user;
       this.isLoggedIn = !!user;
     });
 
-    // refresh في الخلفية بدون ما يأثر على الـ UI
     this.refreshProfile();
   }
 
@@ -55,6 +58,19 @@ export class NavbarComponent implements OnInit {
     if (!target.closest('.profile-wrapper')) {
       this.isProfileOpen = false;
     }
+  }
+
+  openSearch(): void {
+    if (this.navSearchBoxRef) {
+      this.heroSearchRect = this.navSearchBoxRef.nativeElement.getBoundingClientRect();
+    }
+    this.showSearchOverlay = true;
+    this.isMenuOpen = false;
+  }
+
+  closeSearch(): void {
+    this.showSearchOverlay = false;
+    this.heroSearchRect = null;
   }
 
   toggleMenu() {
