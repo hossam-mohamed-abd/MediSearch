@@ -1,17 +1,35 @@
-import { Component, OnInit, OnDestroy, ChangeDetectorRef, ChangeDetectionStrategy } from '@angular/core';
+import {
+  Component,
+  OnInit,
+  OnDestroy,
+  ChangeDetectorRef,
+  ChangeDetectionStrategy,
+  ViewChild,
+  ElementRef,
+} from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { SearchOverlayComponent } from '../../../shared/search-overlay/search-overlay.component'; 
 
 @Component({
   selector: 'app-hero',
-  imports: [CommonModule],
+  standalone: true,
+  imports: [CommonModule, SearchOverlayComponent],
   templateUrl: './hero.component.html',
   styleUrl: './hero.component.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class HeroComponent implements OnInit, OnDestroy {
+
+  // Reference to the search bar element in hero
+  @ViewChild('heroSearchInner') heroSearchInnerRef!: ElementRef<HTMLDivElement>;
+
   searchAnimating = false;
   searchReturning = false;
   showHint        = false;
+  showSearchOverlay = false;
+
+  // We capture the rect BEFORE the overlay opens so FLIP knows the source
+  heroSearchRect: DOMRect | null = null;
 
   private timers: any[] = [];
 
@@ -45,7 +63,22 @@ export class HeroComponent implements OnInit, OnDestroy {
     this.cdr.markForCheck();
   }
 
+  openSearch(): void {
+    // Capture hero search bar position BEFORE overlay renders
+    if (this.heroSearchInnerRef) {
+      this.heroSearchRect = this.heroSearchInnerRef.nativeElement.getBoundingClientRect();
+    }
+    this.showSearchOverlay = true;
+    this.cdr.markForCheck();
+  }
+
+  closeSearch(): void {
+    this.showSearchOverlay = false;
+    this.heroSearchRect = null;
+    this.cdr.markForCheck();
+  }
+
   ngOnDestroy() {
     this.timers.forEach(t => clearTimeout(t));
   }
-}   
+}

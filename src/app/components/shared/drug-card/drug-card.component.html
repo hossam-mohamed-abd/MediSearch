@@ -1,0 +1,106 @@
+<article
+  class="drug-card"
+  (click)="onCardClick()"
+  role="button"
+  [attr.aria-label]="'View details for ' + drug.name"
+  tabindex="0"
+  (keydown.enter)="onCardClick()"
+>
+
+  <!-- Image -->
+  <div class="drug-card__image-wrap">
+    @if (!imageError) {
+      <img
+        [src]="displayImage"
+        [alt]="drug.name"
+        class="drug-card__image"
+        (error)="onImageError()"
+        loading="lazy"
+      />
+    } @else {
+      <div class="drug-card__image-fallback">
+        <i class="fa-solid fa-pills" aria-hidden="true"></i>
+      </div>
+    }
+
+    <!-- Favorite -->
+    <button
+      class="drug-card__fav-btn"
+      [class.drug-card__fav-btn--active]="drug.is_favorite"
+      (click)="onFavoriteClick($event)"
+      [attr.aria-label]="drug.is_favorite ? 'Remove from favorites' : 'Add to favorites'"
+    >
+      @if (drug.is_favorite) {
+        <i class="fa-solid fa-heart" aria-hidden="true"></i>
+      } @else {
+        <i class="fa-regular fa-heart" aria-hidden="true"></i>
+      }
+    </button>
+
+    <!-- Availability -->
+    <span
+      class="drug-card__availability"
+      [class.drug-card__availability--out]="!drug.is_available"
+    >
+      @if (drug.is_available) {
+        <i class="fa-solid fa-circle-check"></i> Available
+      } @else {
+        <i class="fa-solid fa-circle-xmark"></i> Unavailable
+      }
+    </span>
+  </div>
+
+  <!-- Body -->
+  <div class="drug-card__body">
+
+    <div class="drug-card__header">
+      <h3 class="drug-card__name">{{ drug.name }}</h3>
+      <p class="drug-card__sub">{{ drug.active_substance }} · {{ drug.manufacturer }}</p>
+    </div>
+
+    <div class="drug-card__badges">
+      @if (drug.category_name) {
+        <span class="badge badge--category">{{ drug.category_name }}</span>
+      }
+      @if (drug.dosage_form) {
+        <span class="badge badge--form">{{ drug.dosage_form }}</span>
+      }
+    </div>
+
+    <div class="drug-card__meta">
+      @if (drug.pharmacy_count !== undefined) {
+        <span class="drug-card__meta-item">
+          <i class="fa-solid fa-store" aria-hidden="true"></i>
+          {{ drug.pharmacy_count }} pharmacies
+        </span>
+      }
+      @if (drug.alternatives_count) {
+        <span class="drug-card__meta-item drug-card__meta-item--alt">
+          <i class="fa-solid fa-shuffle" aria-hidden="true"></i>
+          {{ drug.alternatives_count }} alternatives
+        </span>
+      }
+    </div>
+
+    <!-- Footer -->
+    <div class="drug-card__footer">
+      <div class="drug-card__price">
+        <span class="drug-card__price-label">Starting from</span>
+        <span class="drug-card__price-value">
+          {{ drug.min_price !== undefined ? ('EGP ' + drug.min_price) : 'N/A' }}
+        </span>
+      </div>
+
+      <button
+        class="drug-card__ai-btn"
+        (click)="onAiClick($event)"
+        aria-label="Ask AI about this medicine"
+        title="Ask AI about this medicine"
+      >
+        <i class="fa-solid fa-robot" aria-hidden="true"></i>
+        <span class="drug-card__ai-label">Ask AI</span>
+      </button>
+    </div>
+
+  </div>
+</article>

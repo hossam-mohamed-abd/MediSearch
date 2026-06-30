@@ -1,0 +1,82 @@
+<div
+  class="search-overlay__backdrop"
+  [class.search-overlay__backdrop--visible]="isVisible"
+  (click)="onBackdropClick($event)"
+  role="dialog"
+  aria-modal="true"
+  aria-label="Medicine search"
+>
+  <div class="search-overlay__panel">
+
+    <!-- ── Search bar (FLIP target) ── -->
+    <div class="search-overlay__bar-wrap" #overlaySearchRef>
+      <div class="search-inner">
+        <i class="fa-solid fa-magnifying-glass search-icon"></i>
+
+        <input
+          #searchInput
+          type="text"
+          [(ngModel)]="searchQuery"
+          (ngModelChange)="onSearch()"
+          placeholder="Search by name, active substance, company or pharmacy..."
+          autocomplete="off"
+          spellcheck="false"
+        />
+
+        <button class="search-btn" (click)="onSearch()">
+          <i class="fa-solid fa-magnifying-glass"></i>
+          <span>Search</span>
+        </button>
+
+        <button class="search-overlay__close" (click)="close()" aria-label="Close search">
+          <i class="fa-solid fa-xmark"></i>
+        </button>
+      </div>
+
+      <!-- Quick tags -->
+      <div class="search-tags" [class.tags-hidden]="searchQuery.length > 0">
+        <span>Popular:</span>
+        <a (click)="searchQuery='Panadol'; onSearch()">Panadol</a>
+        <a (click)="searchQuery='Augmentin'; onSearch()">Augmentin</a>
+        <a (click)="searchQuery='Brufen'; onSearch()">Brufen</a>
+        <a (click)="searchQuery='Glucophage'; onSearch()">Glucophage</a>
+      </div>
+    </div>
+
+    <!-- ── Results ── -->
+    <div
+      class="search-overlay__results"
+      [class.search-overlay__results--visible]="isVisible && !isAnimating"
+    >
+      <!-- Result count -->
+      @if (searchQuery.length > 0) {
+        <div class="search-overlay__meta">
+          <span class="results-count">
+            {{ filteredDrugs.length }} result{{ filteredDrugs.length !== 1 ? 's' : '' }}
+            for "<strong>{{ searchQuery }}</strong>"
+          </span>
+        </div>
+      }
+
+      <!-- Grid or empty state -->
+      @if (filteredDrugs.length > 0) {
+        <div class="search-overlay__grid">
+          @for (drug of filteredDrugs; track drug.id) {
+            <app-drug-card
+              [drug]="drug"
+              (favoriteToggled)="onFavoriteToggle($event)"
+              (cardClicked)="onDrugClick($event)"
+            />
+          }
+        </div>
+      } @else {
+        <div class="search-overlay__empty">
+          <i class="fa-solid fa-pills"></i>
+          <p>No medicines found for "<strong>{{ searchQuery }}</strong>"</p>
+          <span>Try a different name or active substance</span>
+        </div>
+      }
+
+    </div>
+  </div>
+</div>

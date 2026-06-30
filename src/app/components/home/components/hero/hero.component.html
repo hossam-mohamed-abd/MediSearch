@@ -46,10 +46,11 @@
 
         <!-- Search -->
         <div class="hero-search">
-          <div class="search-inner">
+          <div #heroSearchInner class="search-inner">
             <i class="fa-solid fa-magnifying-glass search-icon"></i>
-            <input type="text" placeholder="Search by name, active substance, company or pharmacy..." />
-            <button class="search-btn">
+            <input type="text" placeholder="Search by name, active substance, company or pharmacy..."
+              (click)="openSearch()" readonly />
+            <button class="search-btn" (click)="openSearch()">
               <i class="fa-solid fa-magnifying-glass"></i>
               <span>Search</span>
             </button>
@@ -136,4 +137,5 @@
       </div>
     </div>
   </div>
+  <app-search-overlay *ngIf="showSearchOverlay" [heroSearchRect]="heroSearchRect" (closed)="closeSearch()" />
 </section>
