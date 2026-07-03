@@ -91,6 +91,9 @@ export class NavbarComponent implements OnInit {
     if (!target.closest('.favorites-wrapper')) {
       this.isFavoritesOpen = false;
     }
+    if (!target.closest('.notif-wrapper')) {
+      this.isNotificationsOpen = false;
+    }
   }
 
   openSearch(): void {

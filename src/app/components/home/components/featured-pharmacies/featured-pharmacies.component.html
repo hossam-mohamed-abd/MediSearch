@@ -71,9 +71,11 @@
             </div>
           </div>
 
-          <button class="card-btn">
+          <button class="card-btn" [routerLink]="[
+                  '/pharmacies',
+                  pharmacy.id
+                ]">
             Explore Pharmacy
-            <i class="fa-solid fa-arrow-right"></i>
           </button>
 
         </div>

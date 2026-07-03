@@ -5,10 +5,10 @@ import {
 } from '@angular/core';
 
 import { PharmacyService } from '../../../../core/services/pharmacy.service';
-
+import { AuthRoutingModule } from "../../../../features/auth/auth-routing-module";
 @Component({
   selector: 'app-featured-pharmacies',
-  imports: [],
+  imports: [AuthRoutingModule],
   templateUrl: './featured-pharmacies.component.html',
   styleUrl: './featured-pharmacies.component.css',
 })

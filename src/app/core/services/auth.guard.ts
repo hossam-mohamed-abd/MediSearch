@@ -15,6 +15,6 @@ export const guestGuard: CanActivateFn = () => {
 
     catchError(() => {
       return of(true);
-    })
+    }),
   );
 };

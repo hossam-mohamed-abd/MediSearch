@@ -1,82 +1,232 @@
-<div
-  class="search-overlay__backdrop"
-  [class.search-overlay__backdrop--visible]="isVisible"
-  (click)="onBackdropClick($event)"
-  role="dialog"
-  aria-modal="true"
-  aria-label="Medicine search"
->
+<div class="search-overlay__backdrop" [class.search-overlay__backdrop--visible]="isVisible"
+  (click)="onBackdropClick($event)" role="dialog" aria-modal="true">
+
+  <div class="search-overlay__orb search-overlay__orb--1"></div>
+  <div class="search-overlay__orb search-overlay__orb--2"></div>
+
   <div class="search-overlay__panel">
 
-    <!-- ── Search bar (FLIP target) ── -->
+    <!-- Search Bar -->
     <div class="search-overlay__bar-wrap" #overlaySearchRef>
-      <div class="search-inner">
-        <i class="fa-solid fa-magnifying-glass search-icon"></i>
 
-        <input
-          #searchInput
-          type="text"
-          [(ngModel)]="searchQuery"
-          (ngModelChange)="onSearch()"
-          placeholder="Search by name, active substance, company or pharmacy..."
-          autocomplete="off"
-          spellcheck="false"
-        />
+      <div class="search-inner" [class.search-inner--disabled]="!isLoggedIn"
+        [class.search-inner--focus-ring]="isVisible">
 
-        <button class="search-btn" (click)="onSearch()">
-          <i class="fa-solid fa-magnifying-glass"></i>
-          <span>Search</span>
-        </button>
+        <div class="search-status" [class.search-status--typing]="searchStatus === 'typing'"
+          [class.search-status--loading]="searchStatus === 'loading'"
+          [class.search-status--done]="searchStatus === 'done'">
+          <span class="search-status__ring"></span>
+          <span class="search-status__ring search-status__ring--2"></span>
+          <i class="fa-solid fa-magnifying-glass search-status__icon"></i>
+          <i class="fa-solid fa-spinner search-status__spinner"></i>
+          <i class="fa-solid fa-check search-status__check"></i>
+        </div>
+
+        <input #searchInput type="text" autocomplete="off" spellcheck="false"
+          [placeholder]="isLoggedIn ? 'Search medicines, active substance...' : 'سجل دخولك عشان تقدر تبحث'"
+          [formControl]="searchControl" [readonly]="!isLoggedIn" (keydown.enter)="onEnter()" />
+
+        @if(!isLoggedIn){
+        <i class="fa-solid fa-lock search-inner__lock"></i>
+        }
 
         <button class="search-overlay__close" (click)="close()" aria-label="Close search">
           <i class="fa-solid fa-xmark"></i>
         </button>
+
       </div>
 
-      <!-- Quick tags -->
-      <div class="search-tags" [class.tags-hidden]="searchQuery.length > 0">
-        <span>Popular:</span>
-        <a (click)="searchQuery='Panadol'; onSearch()">Panadol</a>
-        <a (click)="searchQuery='Augmentin'; onSearch()">Augmentin</a>
-        <a (click)="searchQuery='Brufen'; onSearch()">Brufen</a>
-        <a (click)="searchQuery='Glucophage'; onSearch()">Glucophage</a>
-      </div>
     </div>
 
-    <!-- ── Results ── -->
-    <div
-      class="search-overlay__results"
-      [class.search-overlay__results--visible]="isVisible && !isAnimating"
-    >
-      <!-- Result count -->
-      @if (searchQuery.length > 0) {
+    <!-- Search Content -->
+
+    <div class="search-overlay__results" [class.search-overlay__results--visible]="isVisible && !isAnimating">
+
+      @if(!isLoggedIn){
+
+      <!-- Auth Gate -->
+      <div class="auth-gate">
+
+        <div class="auth-gate__icon">
+          <i class="fa-solid fa-location-dot"></i>
+        </div>
+
+        <h3>اعمل حسابك عشان نعرضلك دوائك في أقرب صيدلية ليك</h3>
+
+        <p>
+          سجّل دلوقتي وشوف السعر والمخزون في الصيدليات القريبة منك،
+          واحفظ أدويتك المفضلة عشان تلاقيها بسهولة في أي وقت.
+        </p>
+
+        <div class="auth-gate__actions">
+          <button class="auth-gate__primary" (click)="goToRegister()">
+            إنشاء حساب مجانًا
+            <i class="fa-solid fa-arrow-left"></i>
+          </button>
+
+          <button class="auth-gate__secondary" (click)="goToLogin()">
+            عندي حساب بالفعل
+          </button>
+        </div>
+
+        <button class="auth-gate__skip" (click)="continueAsGuest()">
+          متابعة التصفح بدون تسجيل
+        </button>
+
+      </div>
+
+      } @else {
+
+      <!-- Loading -->
+      @if(searchStatus === 'loading'){
+      <div class="search-loading">
+        <span class="search-loading__dot"></span>
+        <span class="search-loading__dot"></span>
+        <span class="search-loading__dot"></span>
+        <span class="search-loading__text">جاري البحث...</span>
+      </div>
+      }
+
+      <!-- Before Search -->
+      @if(searchStatus !== 'loading' && searchControl.value?.trim()?.length! < 3){ <!-- Welcome hint — shown when the
+        box is completely empty -->
+        @if(!searchControl.value?.trim()?.length){
+        <div class="search-hint">
+          <div class="search-hint__icon">
+            <i class="fa-solid fa-pills"></i>
+          </div>
+          <h3>ابحث عن أي دواء</h3>
+          <p>اكتب اسم الدواء، المادة الفعالة، أو الشركة المصنعة وهنجيبلك كل التفاصيل والبدائل.</p>
+        </div>
+        }
+
+        <!-- Too-short hint — shown after the user pauses with 1-2 characters -->
+        @if(showTooShortHint){
+        <div class="search-hint search-hint--warning">
+          <div class="search-hint__icon search-hint__icon--warning">
+            <i class="fa-solid fa-keyboard"></i>
+          </div>
+          <h3>لسه محتاج حروف أكتر</h3>
+          <p>اكتب 3 أحرف على الأقل عشان نقدر نلاقيلك الدواء المناسب.</p>
+        </div>
+        }
+
+        <!-- Recent Searches -->
+        @if(recentSearches.length){
+        <div class="search-section">
+          <div class="search-section__header">
+            <h3>Recent Searches</h3>
+            <button class="clear-btn" (click)="clearRecentSearches()">Clear</button>
+          </div>
+          <div class="search-tags">
+            @for(item of recentSearches; track item){
+            <button class="tag" (click)="searchFromTag(item)">
+              <i class="fa-solid fa-clock-rotate-left"></i>
+              {{item}}
+            </button>
+            }
+          </div>
+        </div>
+        }
+
+        <!-- Popular -->
+        <div class="search-section">
+          <div class="search-section__header">
+            <h3>Popular Searches</h3>
+          </div>
+          <div class="search-tags">
+            @for(item of popularSearches; track item){
+            <button class="tag tag--popular" (click)="searchFromTag(item)">
+              <i class="fa-solid fa-fire"></i>
+              {{item}}
+            </button>
+            }
+          </div>
+        </div>
+
+        }
+
+        <!-- Search Meta -->
+        @if(searchStatus !== 'loading' && searchControl.value?.trim()?.length! >= 3){
         <div class="search-overlay__meta">
           <span class="results-count">
-            {{ filteredDrugs.length }} result{{ filteredDrugs.length !== 1 ? 's' : '' }}
-            for "<strong>{{ searchQuery }}</strong>"
+            <strong>{{total}}</strong> result{{total!==1?'s':''}} found
           </span>
         </div>
-      }
+        }
 
-      <!-- Grid or empty state -->
-      @if (filteredDrugs.length > 0) {
+        <!-- Results -->
+        @if(searchStatus !== 'loading' && drugs.length > 0){
+
         <div class="search-overlay__grid">
-          @for (drug of filteredDrugs; track drug.id) {
-            <app-drug-card
-              [drug]="drug"
-              (favoriteToggled)="onFavoriteToggle($event)"
-              (cardClicked)="onDrugClick($event)"
-            />
+          @for(drug of drugs; track trackDrug($index, drug)){
+          <app-drug-card [drug]="drug" (favoriteToggled)="onFavoriteToggle($event)"
+            (cardClicked)="onDrugClick($event)" />
           }
         </div>
-      } @else {
+
+        @if(hasMore){
+        <div class="search-load-more">
+          <button class="load-more-btn" (click)="loadMore()">
+            <i class="fa-solid fa-plus"></i>
+            Load More
+          </button>
+        </div>
+        }
+
+        <div class="search-footer">
+          <button class="view-all-btn" (click)="onSearchButton()">
+            View All Results
+            <i class="fa-solid fa-arrow-right"></i>
+          </button>
+        </div>
+
+        <!-- Ask AI — has results -->
+        <div class="ai-ask">
+          <div class="ai-ask__icon">
+            <i class="fa-solid fa-wand-magic-sparkles"></i>
+          </div>
+          <div class="ai-ask__text">
+            <h4>مش لاقي اللي انت محتاجه بالظبط؟</h4>
+            <p>اسأل الـ AI عن "{{searchControl.value}}" وهيديك تفاصيل أكتر وبدائل مناسبة.</p>
+          </div>
+          <button class="ai-ask__btn" (click)="askAI()">
+            <i class="fa-solid fa-sparkles"></i>
+            اسأل AI
+          </button>
+        </div>
+
+        }
+
+        <!-- Empty -->
+        @if(searchStatus !== 'loading' && searchControl.value?.trim()?.length! >= 3 && drugs.length === 0){
         <div class="search-overlay__empty">
           <i class="fa-solid fa-pills"></i>
-          <p>No medicines found for "<strong>{{ searchQuery }}</strong>"</p>
-          <span>Try a different name or active substance</span>
+          <h3>No medicines found</h3>
+          <p>We couldn't find any medicine matching <strong>"{{searchControl.value}}"</strong></p>
+          <span>Try another medicine name, active substance, or manufacturer.</span>
+
+          <!-- Ask AI — no data -->
+          <div class="ai-ask ai-ask--empty">
+            <div class="ai-ask__icon">
+              <i class="fa-solid fa-wand-magic-sparkles"></i>
+            </div>
+            <div class="ai-ask__text">
+              <h4>محتاج تفاصيل عن "{{searchControl.value}}"؟</h4>
+              <p>لا تقلق، اسأل الـ AI هتلاقي تفاصيل أي دوا بتسأل عنه.</p>
+            </div>
+            <button class="ai-ask__btn" (click)="askAI()">
+              <i class="fa-solid fa-sparkles"></i>
+              اسأل AI
+            </button>
+          </div>
         </div>
-      }
+        }
+
+        }
 
     </div>
+
   </div>
+
 </div>

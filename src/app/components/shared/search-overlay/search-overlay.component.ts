@@ -1,7 +1,7 @@
 import {
   Component,
-  Input,
   Output,
+  Input,
   EventEmitter,
   OnInit,
   OnDestroy,
@@ -10,101 +10,97 @@ import {
   ViewChild,
   ChangeDetectionStrategy,
   ChangeDetectorRef,
+  inject,
 } from '@angular/core';
-import { FormsModule } from '@angular/forms';
+
+import { ReactiveFormsModule, FormControl } from '@angular/forms';
+import { debounceTime, distinctUntilChanged, tap } from 'rxjs';
+import { Router } from '@angular/router';
+
 import { DrugCardComponent, Drug } from '../drug-card/drug-card.component';
+import { SearchService } from '../../../core/services/search.service';
+import { FavoriteService } from '../../../core/services/favorite.service';
+import { FavoriteStateService } from '../../../core/services/favorite-state.service';
+import { AuthStateService } from '../../../core/services/auth-state';
+
+type SearchStatus = 'idle' | 'typing' | 'loading' | 'done';
 
 @Component({
   selector: 'app-search-overlay',
   standalone: true,
-  imports: [FormsModule, DrugCardComponent],
+  imports: [ReactiveFormsModule, DrugCardComponent],
   templateUrl: './search-overlay.component.html',
   styleUrl: './search-overlay.component.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class SearchOverlayComponent implements OnInit, AfterViewInit, OnDestroy {
+  private searchService = inject(SearchService);
+  private favoriteService = inject(FavoriteService);
+  private favoriteState = inject(FavoriteStateService);
+  private authState = inject(AuthStateService);
+  private router = inject(Router);
+  private cdr = inject(ChangeDetectorRef);
 
-  // بنستقبل مكان الـ search bar في الـ hero عشان نعمل FLIP
-  @Input() heroSearchRect: DOMRect | null = null;
-  @Output() closed = new EventEmitter<void>();
+  /** Time to wait after the user stops typing before searching automatically */
+  private readonly SEARCH_DEBOUNCE_MS = 1000;
+  /** How long the "done" checkmark stays visible before reverting to idle */
+  private readonly DONE_DISPLAY_MS = 700;
+  /** Minimum characters required to trigger a search */
+  private readonly MIN_QUERY_LENGTH = 3;
 
-  @ViewChild('overlaySearchRef') overlaySearchRef!: ElementRef<HTMLDivElement>;
-  @ViewChild('searchInput') searchInputRef!: ElementRef<HTMLInputElement>;
+  @Input()
+  heroSearchRect: DOMRect | null = null;
 
-  searchQuery = '';
-  isVisible = false;   // controls fade-in of the backdrop + results
-  isAnimating = false; // while FLIP is playing
+  @Output()
+  closed = new EventEmitter<void>();
 
-  // ── Static drug data ────────────────────────────────────────
-  private allDrugs: Drug[] = [
-    {
-      id: 1, name: 'Panadol Extra 500mg', active_substance: 'Paracetamol',
-      dosage_form: 'Tablet', strength: '500mg', manufacturer: 'GSK',
-      category_name: 'Pain Relief', min_price: 35, pharmacy_count: 12,
-      alternatives_count: 3, is_available: true, is_favorite: false,
-      image_url: '',
-    },
-    {
-      id: 2, name: 'Augmentin 625mg', active_substance: 'Amoxicillin/Clavulanate',
-      dosage_form: 'Tablet', strength: '625mg', manufacturer: 'GSK',
-      category_name: 'Antibiotics', min_price: 120, pharmacy_count: 8,
-      alternatives_count: 2, is_available: true, is_favorite: false,
-      image_url: '',
-    },
-    {
-      id: 3, name: 'Brufen 400mg', active_substance: 'Ibuprofen',
-      dosage_form: 'Tablet', strength: '400mg', manufacturer: 'Abbott',
-      category_name: 'Pain Relief', min_price: 28, pharmacy_count: 15,
-      alternatives_count: 4, is_available: false, is_favorite: false,
-      image_url: '',
-    },
-    {
-      id: 4, name: 'Glucophage 500mg', active_substance: 'Metformin',
-      dosage_form: 'Tablet', strength: '500mg', manufacturer: 'Merck',
-      category_name: 'Diabetes', min_price: 45, pharmacy_count: 10,
-      alternatives_count: 2, is_available: true, is_favorite: true,
-      image_url: '',
-    },
-    {
-      id: 5, name: 'Nexium 40mg', active_substance: 'Esomeprazole',
-      dosage_form: 'Tablet', strength: '40mg', manufacturer: 'AstraZeneca',
-      category_name: 'Gastric', min_price: 95, pharmacy_count: 7,
-      alternatives_count: 3, is_available: true, is_favorite: false,
-      image_url: '',
-    },
-    {
-      id: 6, name: 'Concor 5mg', active_substance: 'Bisoprolol',
-      dosage_form: 'Tablet', strength: '5mg', manufacturer: 'Merck',
-      category_name: 'Cardiology', min_price: 60, pharmacy_count: 9,
-      alternatives_count: 1, is_available: true, is_favorite: false,
-      image_url: '',
-    },
-    {
-      id: 7, name: 'Amoxil 500mg', active_substance: 'Amoxicillin',
-      dosage_form: 'Capsule', strength: '500mg', manufacturer: 'GSK',
-      category_name: 'Antibiotics', min_price: 55, pharmacy_count: 14,
-      alternatives_count: 5, is_available: true, is_favorite: false,
-      image_url: '',
-    },
-    {
-      id: 8, name: 'Ventolin Syrup', active_substance: 'Salbutamol',
-      dosage_form: 'Syrup', strength: '2mg/5ml', manufacturer: 'GSK',
-      category_name: 'Respiratory', min_price: 40, pharmacy_count: 6,
-      alternatives_count: 2, is_available: false, is_favorite: false,
-      image_url: '',
-    },
-  ];
+  @ViewChild('overlaySearchRef')
+  overlaySearchRef!: ElementRef<HTMLDivElement>;
 
-  filteredDrugs: Drug[] = [];
+  @ViewChild('searchInput')
+  searchInputRef!: ElementRef<HTMLInputElement>;
+
+  searchControl = new FormControl('');
+
+  drugs: Drug[] = [];
+
+  page = 1;
+  limit = 6;
+  total = 0;
+  hasMore = false;
+
+  isVisible = false;
+  isAnimating = false;
+
+  isLoggedIn = false;
+  searchStatus: SearchStatus = 'idle';
+
+  /** true once the user paused typing with 1-2 characters only */
+  showTooShortHint = false;
+
+  recentSearches: string[] = [];
+
+  readonly popularSearches = ['Panadol', 'Augmentin', 'Brufen', 'Glucophage', 'Concor', 'Ventolin'];
+
+  private doneTimer?: ReturnType<typeof setTimeout>;
 
   private keydownHandler = (e: KeyboardEvent) => {
-    if (e.key === 'Escape') this.close();
+    if (e.key === 'Escape') {
+      this.close();
+    }
   };
 
-  constructor(private cdr: ChangeDetectorRef) {}
-
   ngOnInit(): void {
-    this.filteredDrugs = [...this.allDrugs];
+    this.isLoggedIn = this.authState.isLoggedIn();
+
+    this.authState.user$.subscribe((user) => {
+      this.isLoggedIn = !!user;
+      this.cdr.markForCheck();
+    });
+
+    this.loadRecentSearches();
+    this.listenSearch();
+
     document.addEventListener('keydown', this.keydownHandler);
     document.body.style.overflow = 'hidden';
   }
@@ -116,12 +112,176 @@ export class SearchOverlayComponent implements OnInit, AfterViewInit, OnDestroy 
   ngOnDestroy(): void {
     document.removeEventListener('keydown', this.keydownHandler);
     document.body.style.overflow = '';
+    if (this.doneTimer) clearTimeout(this.doneTimer);
   }
 
-  // ── FLIP animation ──────────────────────────────────────────
+  private listenSearch(): void {
+    this.searchControl.valueChanges
+      .pipe(
+        tap((value) => {
+          const query = (value ?? '').trim();
+
+          // Hide any stale "too short" hint the moment the user resumes typing
+          this.showTooShortHint = false;
+
+          if (query.length >= this.MIN_QUERY_LENGTH) {
+            this.searchStatus = 'typing';
+          } else {
+            this.searchStatus = 'idle';
+            this.drugs = [];
+            this.total = 0;
+            this.hasMore = false;
+          }
+          this.cdr.markForCheck();
+        }),
+        debounceTime(this.SEARCH_DEBOUNCE_MS),
+        distinctUntilChanged(),
+      )
+      .subscribe((value) => {
+        const query = (value ?? '').trim();
+
+        if (query.length === 0) {
+          this.showTooShortHint = false;
+          this.cdr.markForCheck();
+          return;
+        }
+
+        if (query.length < this.MIN_QUERY_LENGTH) {
+          this.showTooShortHint = true;
+          this.cdr.markForCheck();
+          return;
+        }
+
+        this.showTooShortHint = false;
+        this.page = 1;
+        this.search(query);
+      });
+  }
+
+  search(query: string): void {
+    this.searchStatus = 'loading';
+    this.cdr.markForCheck();
+
+    this.searchService.search(query, this.page, this.limit).subscribe({
+      next: (res) => {
+        this.drugs = res.data;
+        this.total = res.total;
+        this.hasMore = res.hasMore;
+        this.saveSearch(query);
+        this.showDone();
+      },
+      error: () => {
+        this.drugs = [];
+        this.total = 0;
+        this.hasMore = false;
+        this.searchStatus = 'idle';
+        this.cdr.markForCheck();
+      },
+    });
+  }
+
+  private showDone(): void {
+    this.searchStatus = 'done';
+    this.cdr.markForCheck();
+
+    if (this.doneTimer) clearTimeout(this.doneTimer);
+    this.doneTimer = setTimeout(() => {
+      this.searchStatus = 'idle';
+      this.cdr.markForCheck();
+    }, this.DONE_DISPLAY_MS);
+  }
+
+  loadMore(): void {
+    if (!this.hasMore) return;
+
+    this.page++;
+    this.searchStatus = 'loading';
+    this.cdr.markForCheck();
+
+    this.searchService.search(this.searchControl.value ?? '', this.page, this.limit).subscribe({
+      next: (res) => {
+        this.drugs = [...this.drugs, ...res.data];
+        this.hasMore = res.hasMore;
+        this.showDone();
+      },
+    });
+  }
+
+  searchFromTag(query: string): void {
+    if (!this.isLoggedIn) return;
+    this.showTooShortHint = false;
+    this.searchControl.setValue(query);
+  }
+
+  private loadRecentSearches(): void {
+    const data = localStorage.getItem('recent-searches');
+    if (!data) return;
+    this.recentSearches = JSON.parse(data);
+  }
+
+  private saveSearch(query: string): void {
+    let history = this.recentSearches.filter((item) => item !== query);
+    history.unshift(query);
+    history = history.slice(0, 6);
+    this.recentSearches = history;
+    localStorage.setItem('recent-searches', JSON.stringify(history));
+  }
+
+  clearRecentSearches(): void {
+    this.recentSearches = [];
+    localStorage.removeItem('recent-searches');
+  }
+
+  onDrugClick(drug: Drug): void {
+    this.close();
+    this.router.navigate(['/medicine', drug.id]);
+  }
+
+  onFavoriteToggle(drug: Drug): void {
+    if (!this.isLoggedIn) return;
+
+    this.favoriteService.toggle(drug.id).subscribe({
+      next: (res) => {
+        drug.is_favorite = res.isFavorite;
+
+        if (res.isFavorite) {
+          this.favoriteState.addFavorite(drug);
+        } else {
+          this.favoriteState.removeFavorite(drug.id);
+        }
+
+        this.cdr.markForCheck();
+      },
+    });
+  }
+
+  /**
+   * TODO: نربط الزرار ده بالـ AI model بعدين.
+   * دلوقتي بس بنجهز الـ query الحالي عشان نبعته للموديل لما يبقى جاهز.
+   */
+  askAI(): void {
+    const query = this.searchControl.value?.trim();
+    if (!query) return;
+
+    console.log('Ask AI about:', query);
+  }
+
+  goToRegister(): void {
+    this.close();
+    this.router.navigate(['/register']);
+  }
+
+  goToLogin(): void {
+    this.close();
+    this.router.navigate(['/login']);
+  }
+
+  continueAsGuest(): void {
+    this.close();
+  }
+
   private playFLIP(): void {
     if (!this.heroSearchRect || !this.overlaySearchRef) {
-      // no source rect — just fade in normally
       this.isVisible = true;
       this.cdr.markForCheck();
       setTimeout(() => this.searchInputRef?.nativeElement.focus(), 300);
@@ -131,13 +291,11 @@ export class SearchOverlayComponent implements OnInit, AfterViewInit, OnDestroy 
     const target = this.overlaySearchRef.nativeElement;
     const targetRect = target.getBoundingClientRect();
 
-    // Delta between hero search bar and overlay search bar
     const dx = this.heroSearchRect.left - targetRect.left;
-    const dy = this.heroSearchRect.top  - targetRect.top;
-    const scaleX = this.heroSearchRect.width  / targetRect.width;
+    const dy = this.heroSearchRect.top - targetRect.top;
+    const scaleX = this.heroSearchRect.width / targetRect.width;
     const scaleY = this.heroSearchRect.height / targetRect.height;
 
-    // Start from hero position
     target.style.transform = `translate(${dx}px, ${dy}px) scale(${scaleX}, ${scaleY})`;
     target.style.transformOrigin = 'top left';
     target.style.transition = 'none';
@@ -147,38 +305,21 @@ export class SearchOverlayComponent implements OnInit, AfterViewInit, OnDestroy 
     this.isVisible = false;
     this.cdr.markForCheck();
 
-    // Force reflow then animate to final position
     requestAnimationFrame(() => {
       requestAnimationFrame(() => {
-        target.style.transition = 'transform 0.55s cubic-bezier(0.34, 1.15, 0.64, 1), opacity 0.3s ease';
-        target.style.transform  = 'translate(0, 0) scale(1)';
+        target.style.transition = 'transform .55s cubic-bezier(.34,1.15,.64,1),opacity .3s';
+        target.style.transform = 'translate(0,0) scale(1)';
 
-        // Fade in backdrop + results
         setTimeout(() => {
-          this.isVisible   = true;
+          this.isVisible = true;
           this.isAnimating = false;
           this.cdr.markForCheck();
-          this.searchInputRef?.nativeElement.focus();
+          if (this.isLoggedIn) this.searchInputRef?.nativeElement.focus();
         }, 200);
       });
     });
   }
 
-  // ── Search filter ───────────────────────────────────────────
-  onSearch(): void {
-    const q = this.searchQuery.trim().toLowerCase();
-    this.filteredDrugs = q
-      ? this.allDrugs.filter(d =>
-          d.name.toLowerCase().includes(q) ||
-          d.active_substance.toLowerCase().includes(q) ||
-          d.manufacturer.toLowerCase().includes(q) ||
-          (d.category_name ?? '').toLowerCase().includes(q)
-        )
-      : [...this.allDrugs];
-    this.cdr.markForCheck();
-  }
-
-  // ── Close ───────────────────────────────────────────────────
   close(): void {
     this.isVisible = false;
     this.cdr.markForCheck();
@@ -186,14 +327,15 @@ export class SearchOverlayComponent implements OnInit, AfterViewInit, OnDestroy 
     if (this.heroSearchRect && this.overlaySearchRef) {
       const target = this.overlaySearchRef.nativeElement;
       const targetRect = target.getBoundingClientRect();
+
       const dx = this.heroSearchRect.left - targetRect.left;
-      const dy = this.heroSearchRect.top  - targetRect.top;
-      const scaleX = this.heroSearchRect.width  / targetRect.width;
+      const dy = this.heroSearchRect.top - targetRect.top;
+      const scaleX = this.heroSearchRect.width / targetRect.width;
       const scaleY = this.heroSearchRect.height / targetRect.height;
 
-      target.style.transition = 'transform 0.45s cubic-bezier(0.25, 0.46, 0.45, 0.94), opacity 0.3s ease';
-      target.style.transform  = `translate(${dx}px, ${dy}px) scale(${scaleX}, ${scaleY})`;
-      target.style.opacity    = '0';
+      target.style.transition = 'transform .45s cubic-bezier(.25,.46,.45,.94),opacity .3s';
+      target.style.transform = `translate(${dx}px,${dy}px) scale(${scaleX},${scaleY})`;
+      target.style.opacity = '0';
 
       setTimeout(() => this.closed.emit(), 460);
     } else {
@@ -201,19 +343,28 @@ export class SearchOverlayComponent implements OnInit, AfterViewInit, OnDestroy 
     }
   }
 
-  onBackdropClick(e: MouseEvent): void {
-    if ((e.target as HTMLElement).classList.contains('search-overlay__backdrop')) {
+  onBackdropClick(event: MouseEvent): void {
+    const target = event.target as HTMLElement;
+    if (target.classList.contains('search-overlay__backdrop')) {
       this.close();
     }
   }
 
-  onFavoriteToggle(drug: Drug): void {
-    drug.is_favorite = !drug.is_favorite;
-    this.cdr.markForCheck();
+  onSearchButton(): void {
+    if (!this.isLoggedIn) return;
+
+    const query = this.searchControl.value?.trim();
+    if (!query) return;
+
+    this.router.navigate(['/search'], { queryParams: { q: query } });
+    this.close();
   }
 
-  onDrugClick(drug: Drug): void {
-    // navigate to drug detail later
-    console.log('Drug clicked:', drug.name);
+  onEnter(): void {
+    this.onSearchButton();
+  }
+
+  trackDrug(index: number, drug: Drug) {
+    return drug.id;
   }
 }

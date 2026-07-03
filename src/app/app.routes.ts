@@ -6,7 +6,6 @@ import { RegisterComponent } from './features/auth/pages/register/register.compo
 
 import { Login } from './features/auth/pages/login/login.component';
 import { guestGuard } from './core/guards/guest-guard';
-
 export const routes: Routes = [
   {
     path: '',
@@ -23,6 +22,13 @@ export const routes: Routes = [
     path: 'register',
     component: RegisterComponent,
     canActivate: [guestGuard],
+  },
+  {
+    path: 'pharmacies/:id',
+    loadComponent: () =>
+      import('./components/pharmacy-details/pharmacy-details.component').then(
+        (m) => m.PharmacyDetailsComponent,
+      ),
   },
 
   {

@@ -1,0 +1,200 @@
+<div class="pharmacy-page">
+
+    <!-- ══════════ Full-Page Loader ══════════ -->
+    @if (pageLoading()) {
+
+    <div class="page-loader">
+
+        <div class="loader-skeleton hero-skeleton shimmer"></div>
+
+        <div class="loader-stats">
+            <div class="loader-skeleton stat-skeleton shimmer"></div>
+            <div class="loader-skeleton stat-skeleton shimmer"></div>
+            <div class="loader-skeleton stat-skeleton shimmer"></div>
+        </div>
+
+        <div class="loader-grid">
+            @for (i of [1,2,3,4,5,6]; track i) {
+            <div class="loader-skeleton card-skeleton shimmer"></div>
+            }
+        </div>
+
+    </div>
+
+    } @else if (pageError()) {
+
+    <div class="page-error">
+        <i class="fa-solid fa-triangle-exclamation"></i>
+        <p>Something went wrong while loading this pharmacy.</p>
+    </div>
+
+    } @else {
+
+    <!-- ══════════ Hero ══════════ -->
+    <section class="hero">
+
+        <img class="hero-image" [src]="pharmacy()?.image_url" />
+
+        <div class="overlay"></div>
+
+        <div class="hero-content">
+
+            <span class="eyebrow">
+                <i class="fa-solid fa-hospital"></i> Pharmacy
+            </span>
+
+            <h1>{{ pharmacy()?.name }}</h1>
+
+            <div class="hero-meta">
+
+                <p><i class="fa-solid fa-location-dot"></i> {{ pharmacy()?.address }}</p>
+
+                <p><i class="fa-solid fa-phone"></i> {{ pharmacy()?.phone }}</p>
+
+                <p><i class="fa-solid fa-envelope"></i> {{ pharmacy()?.email }}</p>
+
+            </div>
+
+            <div class="rating">
+                <i class="fa-solid fa-star"></i>
+                <span>{{ pharmacy()?.rating }}</span>
+                <span class="rating-count">({{ pharmacy()?.reviews_count }} reviews)</span>
+            </div>
+
+        </div>
+
+    </section>
+
+    <!-- ══════════ Stats ══════════ -->
+    <section class="stats">
+
+        <div class="stat-card" style="--delay: 0">
+            <div class="stat-icon"><i class="fa-solid fa-pills"></i></div>
+            <h2>{{ pharmacy()?.medicines_count }}</h2>
+            <span>Medicines</span>
+        </div>
+
+        <div class="stat-card" style="--delay: 1">
+            <div class="stat-icon"><i class="fa-solid fa-check-circle"></i></div>
+            <h2>{{ pharmacy()?.available_count }}</h2>
+            <span>Available</span>
+        </div>
+
+        <div class="stat-card" style="--delay: 2">
+            <div class="stat-icon"><i class="fa-solid fa-layer-group"></i></div>
+            <h2>{{ pharmacy()?.categories_count }}</h2>
+            <span>Categories</span>
+        </div>
+
+    </section>
+
+    <!-- ══════════ Filters ══════════ -->
+    <section class="filters">
+
+        <div class="search-field" [class.focused]="searchFocused()">
+            <i class="fa-solid fa-magnifying-glass"></i>
+            <input type="text" placeholder="Search medicines..." [formControl]="searchControl" (focus)="onSearchFocus()"
+                (blur)="onSearchBlur()" />
+            @if (isSearching()) {
+            <span class="typing-dots">
+                <i></i><i></i><i></i>
+            </span>
+            }
+        </div>
+
+        <select [formControl]="categoryControl">
+            <option [ngValue]="null">All Categories</option>
+            @for (category of categories(); track category.id) {
+            <option [ngValue]="category.id">{{ category.name }}</option>
+            }
+        </select>
+
+        <button class="toggle-btn" [class.active]="availableOnly()" (click)="toggleAvailable()">
+            @if (availableOnly()) {
+            <i class="fa-solid fa-list"></i> Show All
+            } @else {
+            <i class="fa-solid fa-check"></i> Available Only
+            }
+        </button>
+
+    </section>
+
+    <!-- ══════════ Medicines Grid ══════════ -->
+    <section class="medicines-section">
+
+        @if (!searchResultsReady()) {
+
+        <div class="search-state">
+            @if (isSearching()) {
+            <div class="search-loading">
+                <div class="search-spinner"></div>
+                <p>Searching medicines...</p>
+            </div>
+            } @else {
+            <div class="search-hint">
+                <i class="fa-solid fa-magnifying-glass"></i>
+                <p>Keep typing to search medicines</p>
+            </div>
+            }
+        </div>
+
+        } @else {
+
+        <div class="medicines-grid">
+            @for (medicine of medicines(); track medicine.id) {
+            <app-drug-card [drug]="medicine" />
+            } @empty {
+            <div class="empty-state">
+                <i class="fa-solid fa-box-open"></i>
+                <p>No medicines found</p>
+            </div>
+            }
+        </div>
+
+        @if (hasMore()) {
+        <button class="load-btn" (click)="loadMore()">
+            Load More
+            <i class="fa-solid fa-chevron-down"></i>
+        </button>
+        }
+
+        }
+
+    </section>
+
+    <!-- ══════════ Reviews ══════════ -->
+    <section class="reviews">
+
+        <h2>Reviews</h2>
+
+        <div class="reviews-grid">
+            @for (review of reviews(); track review.id) {
+            <div class="review-card">
+
+                <div class="review-header">
+                    <div class="review-avatar">
+                        {{ review.users.first_name?.charAt(0) }}{{ review.users.last_name?.charAt(0) }}
+                    </div>
+                    <div>
+                        <h4>{{ review.users.first_name }} {{ review.users.last_name }}</h4>
+                        <div class="review-stars">
+                            @for (s of [1,2,3,4,5]; track s) {
+                            <i class="fa-solid fa-star" [class.filled]="s <= review.rating"></i>
+                            }
+                        </div>
+                    </div>
+                </div>
+
+                <p class="review-text">{{ review.review }}</p>
+
+            </div>
+            } @empty {
+            <p class="no-reviews">No reviews yet.</p>
+            }
+        </div>
+
+    </section>
+
+    }
+
+</div>
