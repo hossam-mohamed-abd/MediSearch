@@ -1,0 +1,89 @@
+.modal-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,.55);
+
+  display: flex;
+  justify-content: center;
+  align-items: center;
+
+  z-index: 9999;
+  padding: 20px;
+}
+
+.modal {
+  width: 460px;
+  max-width: 100%;
+  background: white;
+  border-radius: 28px;
+  padding: 35px;
+  text-align: center;
+
+  animation: popup .25s ease;
+}
+
+@keyframes popup {
+  from {
+    opacity: 0;
+    transform: scale(.9);
+  }
+
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.modal-icon {
+  width: 80px;
+  height: 80px;
+
+  margin: auto;
+  margin-bottom: 20px;
+
+  border-radius: 50%;
+  background: #fff1f2;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.modal-icon i {
+  font-size: 32px;
+  color: #ef4444;
+}
+
+.modal h2 {
+  margin-bottom: 15px;
+}
+
+.modal p {
+  color: #666;
+  line-height: 1.7;
+}
+
+.modal-actions {
+  margin-top: 30px;
+  display: flex;
+  gap: 15px;
+}
+
+.modal-actions button {
+  flex: 1;
+  height: 50px;
+  border: none;
+  border-radius: 14px;
+  cursor: pointer;
+  font-size: 15px;
+  font-weight: 600;
+}
+
+.cancel-btn {
+  background: #f3f4f6;
+}
+
+.login-btn {
+  background: #0f766e;
+  color: white;
+}

@@ -1,0 +1,214 @@
+.medicines-grid {
+  display: grid;
+  grid-template-columns:
+    repeat(
+      auto-fill,
+      minmax(270px, 1fr)
+    );
+  gap: 24px;
+}
+
+/* ============================================================
+   Skeleton loading
+   ============================================================ */
+
+.medicines-loading {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(270px, 1fr));
+  gap: 24px;
+}
+
+.medicine-skeleton {
+  border-radius: 16px;
+  overflow: hidden;
+  background: #fff;
+  border: 1px solid #e2e8f0;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.06);
+}
+
+.ms-image {
+  aspect-ratio: 4 / 3;
+  background: linear-gradient(110deg, #f1f5f9 25%, #e2e8f0 50%, #f1f5f9 75%);
+  background-size: 200% 100%;
+  animation: ms-shimmer 1.6s ease-in-out infinite;
+}
+
+.ms-body {
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.ms-line {
+  height: 11px;
+  border-radius: 6px;
+  background: linear-gradient(110deg, #f1f5f9 25%, #e2e8f0 50%, #f1f5f9 75%);
+  background-size: 200% 100%;
+  animation: ms-shimmer 1.6s ease-in-out infinite;
+}
+
+.ms-line--title {
+  width: 72%;
+  height: 14px;
+}
+
+.ms-line--sub {
+  width: 46%;
+}
+
+.ms-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 6px;
+}
+
+.ms-price {
+  width: 64px;
+  height: 22px;
+  border-radius: 20px;
+  background: linear-gradient(110deg, #f1f5f9 25%, #e2e8f0 50%, #f1f5f9 75%);
+  background-size: 200% 100%;
+  animation: ms-shimmer 1.6s ease-in-out infinite;
+}
+
+.ms-btn {
+  width: 34px;
+  height: 34px;
+  border-radius: 10px;
+  background: linear-gradient(110deg, #f1f5f9 25%, #e2e8f0 50%, #f1f5f9 75%);
+  background-size: 200% 100%;
+  animation: ms-shimmer 1.6s ease-in-out infinite;
+}
+
+@keyframes ms-shimmer {
+  0%   { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+
+/* Staggered shimmer so cards don't all pulse in sync */
+.medicine-skeleton:nth-child(4n+2) .ms-image,
+.medicine-skeleton:nth-child(4n+2) .ms-line,
+.medicine-skeleton:nth-child(4n+2) .ms-price,
+.medicine-skeleton:nth-child(4n+2) .ms-btn {
+  animation-delay: 0.15s;
+}
+
+.medicine-skeleton:nth-child(4n+3) .ms-image,
+.medicine-skeleton:nth-child(4n+3) .ms-line,
+.medicine-skeleton:nth-child(4n+3) .ms-price,
+.medicine-skeleton:nth-child(4n+3) .ms-btn {
+  animation-delay: 0.3s;
+}
+
+.medicine-skeleton:nth-child(4n) .ms-image,
+.medicine-skeleton:nth-child(4n) .ms-line,
+.medicine-skeleton:nth-child(4n) .ms-price,
+.medicine-skeleton:nth-child(4n) .ms-btn {
+  animation-delay: 0.45s;
+}
+
+/* ============================================================
+   Actions (Load More / Search)
+   ============================================================ */
+
+.section-actions {
+  margin-top: 40px;
+  display: flex;
+  justify-content: center;
+}
+
+.section-actions--end {
+  flex-direction: column;
+  align-items: center;
+  gap: 14px;
+}
+
+.section-actions__hint {
+  font-size: 14px;
+  color: #64748b;
+  margin: 0;
+}
+
+.section-actions__row {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+.load-btn,
+.search-btn {
+  padding: 14px 30px;
+  border: none;
+  border-radius: 40px;
+  cursor: pointer;
+  text-decoration: none;
+  font-weight: 600;
+  transition: opacity 0.2s ease, transform 0.2s ease;
+}
+
+.load-btn:hover,
+.search-btn:hover {
+  opacity: 0.92;
+  transform: translateY(-1px);
+}
+
+.load-btn {
+  background: #0f766e;
+  color: white;
+}
+
+.load-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.search-btn {
+  background: #2563eb;
+  color: white;
+}
+
+/* Search trigger — this is the element whose rect feeds the FLIP animation */
+.mini-search-trigger {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 13px 24px;
+  border-radius: 40px;
+  border: 1.5px solid #e2e8f0;
+  background: #fff;
+  color: #64748b;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease, transform 0.2s ease;
+}
+
+.mini-search-trigger i {
+  color: #0ea5e9;
+  font-size: 14px;
+}
+
+.mini-search-trigger:hover {
+  border-color: #7dd3fc;
+  box-shadow: 0 4px 16px rgba(14, 165, 233, 0.15);
+  transform: translateY(-1px);
+}
+
+@media (max-width: 480px) {
+  .section-actions__row {
+    flex-direction: column;
+    width: 100%;
+  }
+
+  .load-btn,
+  .search-btn,
+  .mini-search-trigger {
+    width: 100%;
+    justify-content: center;
+  }
+}

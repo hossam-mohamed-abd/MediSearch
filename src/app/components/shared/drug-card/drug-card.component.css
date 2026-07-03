@@ -1,40 +1,40 @@
 /* ============================================================
-   Drug Card Component
+   Drug Card Component — Trending style
    ============================================================ */
 
 .drug-card {
   display: flex;
   flex-direction: column;
-  background: #ffffff;
-  border: 1px solid #e8edf2;
+  background: #fff;
+  border: 1px solid rgba(0, 0, 0, 0.07);
   border-radius: 16px;
   overflow: hidden;
   cursor: pointer;
-  transition: transform 0.18s ease, box-shadow 0.18s ease, border-color 0.18s ease;
+  height: 100%;
   outline: none;
-  width: 100%;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.05), 0 1px 3px rgba(0, 0, 0, 0.04);
+  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1),
+    box-shadow 0.3s ease,
+    border-color 0.3s ease;
 }
 
 .drug-card:hover {
-  transform: translateY(-3px);
-  box-shadow: 0 8px 28px rgba(0, 0, 0, 0.09);
-  border-color: #c3d5f5;
+  border-color: rgba(14, 165, 233, 0.25);
+  transform: translateY(-6px);
+  box-shadow: 0 16px 48px rgba(0, 0, 0, 0.1), 0 4px 12px rgba(0, 0, 0, 0.06);
 }
 
 .drug-card:focus-visible {
-  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.25);
-  border-color: #2563eb;
+  box-shadow: 0 0 0 3px rgba(14, 165, 233, 0.3);
+  border-color: #0ea5e9;
 }
 
 /* ── Image ─────────────────────────────────────────────────── */
 
 .drug-card__image-wrap {
   position: relative;
-  background: #f4f6fb;
-  height: 160px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  width: 100%;
+  height: 180px;
   overflow: hidden;
   flex-shrink: 0;
 }
@@ -42,26 +42,27 @@
 .drug-card__image {
   width: 100%;
   height: 100%;
-  object-fit: contain;
-  padding: 12px;
-  transition: transform 0.22s ease;
+  object-fit: cover;
+  display: block;
+  transition: transform 0.4s ease;
 }
 
 .drug-card:hover .drug-card__image {
-  transform: scale(1.04);
+  transform: scale(1.05);
 }
 
 .drug-card__image-fallback {
+  width: 100%;
+  height: 100%;
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 100%;
-  height: 100%;
-  color: #93a8c4;
+  background: linear-gradient(135deg, #f0f9ff, #e0f2fe);
 }
 
 .drug-card__image-fallback i {
-  font-size: 52px;
+  font-size: 44px;
+  color: #7dd3fc;
 }
 
 /* ── Favorite ──────────────────────────────────────────────── */
@@ -72,31 +73,30 @@
   right: 10px;
   width: 34px;
   height: 34px;
-  border-radius: 50%;
-  background: rgba(255, 255, 255, 0.9);
+  background: rgba(255, 255, 255, 0.92);
   border: 1px solid #e2e8f0;
+  border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  transition: background 0.15s, border-color 0.15s, transform 0.15s;
-  backdrop-filter: blur(4px);
+  backdrop-filter: blur(6px);
+  transition: background 0.2s ease, border-color 0.2s ease, transform 0.2s ease;
+  font-size: 14px;
   color: #94a3b8;
-  font-size: 15px;
-  padding: 0;
 }
 
 .drug-card__fav-btn:hover {
   background: #fff;
-  border-color: #fca5a5;
-  color: #ef4444;
+  border-color: #fda4af;
   transform: scale(1.1);
+  color: #fb7185;
 }
 
 .drug-card__fav-btn--active {
-  color: #ef4444;
-  border-color: #fca5a5;
-  background: #fff;
+  background: #fff1f2;
+  border-color: #fda4af;
+  color: #f43f5e;
 }
 
 /* ── Availability ──────────────────────────────────────────── */
@@ -109,13 +109,13 @@
   align-items: center;
   gap: 5px;
   padding: 3px 10px;
-  border-radius: 20px;
+  border-radius: 100px;
   font-size: 11px;
   font-weight: 600;
-  letter-spacing: 0.02em;
-  background: #dcfce7;
-  color: #15803d;
+  background: rgba(240, 253, 244, 0.92);
   border: 1px solid #bbf7d0;
+  color: #16a34a;
+  backdrop-filter: blur(6px);
 }
 
 .drug-card__availability i {
@@ -123,9 +123,9 @@
 }
 
 .drug-card__availability--out {
-  background: #fee2e2;
-  color: #b91c1c;
-  border-color: #fecaca;
+  background: rgba(255, 241, 242, 0.92);
+  border-color: #fecdd3;
+  color: #e11d48;
 }
 
 /* ── Body ──────────────────────────────────────────────────── */
@@ -134,9 +134,47 @@
   display: flex;
   flex-direction: column;
   gap: 10px;
-  padding: 14px 16px 16px;
+  padding: 18px 20px 20px;
   flex: 1;
 }
+
+/* ── Meta top (badges) ─────────────────────────────────────── */
+
+.drug-card__meta-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 3px 10px;
+  border-radius: 100px;
+  font-size: 10.5px;
+  font-weight: 700;
+  letter-spacing: 0.3px;
+  white-space: nowrap;
+}
+
+.badge--category {
+  background: rgba(14, 165, 233, 0.08);
+  color: #0284c7;
+  border: 1px solid rgba(14, 165, 233, 0.2);
+  text-transform: uppercase;
+  letter-spacing: 0.6px;
+  font-size: 10px;
+}
+
+.badge--form {
+  background: #f0fdf4;
+  color: #15803d;
+  border: 1px solid #bbf7d0;
+}
+
+/* ── Header ────────────────────────────────────────────────── */
 
 .drug-card__header {
   display: flex;
@@ -145,59 +183,27 @@
 }
 
 .drug-card__name {
-  font-size: 15px;
-  font-weight: 600;
-  color: #1e293b;
-  line-height: 1.3;
+  font-family: 'Space Grotesk', 'Inter', sans-serif;
+  font-size: 18px;
+  font-weight: 700;
+  color: #0f172a;
   margin: 0;
-  display: -webkit-box;
-  -webkit-line-clamp: 2;
-  -webkit-box-orient: vertical;
+  line-height: 1.25;
+  white-space: nowrap;
   overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .drug-card__sub {
-  font-size: 12px;
-  color: #64748b;
+  font-size: 12.5px;
+  color: #94a3b8;
   margin: 0;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
 }
 
-/* ── Badges ────────────────────────────────────────────────── */
-
-.drug-card__badges {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 6px;
-}
-
-.badge {
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
-  padding: 3px 10px;
-  border-radius: 20px;
-  font-size: 11px;
-  font-weight: 500;
-}
-
-.badge i { font-size: 11px; }
-
-.badge--category {
-  background: #eff6ff;
-  color: #1d4ed8;
-  border: 1px solid #bfdbfe;
-}
-
-.badge--form {
-  background: #f8fafc;
-  color: #475569;
-  border: 1px solid #e2e8f0;
-}
-
-/* ── Meta ──────────────────────────────────────────────────── */
+/* ── Meta row ──────────────────────────────────────────────── */
 
 .drug-card__meta {
   display: flex;
@@ -209,25 +215,35 @@
 .drug-card__meta-item {
   display: inline-flex;
   align-items: center;
-  gap: 4px;
+  gap: 5px;
   font-size: 12px;
   color: #64748b;
+  font-weight: 500;
 }
 
-.drug-card__meta-item i { font-size: 12px; }
+.drug-card__meta-item i {
+  font-size: 11px;
+  color: #0ea5e9;
+}
 
-.drug-card__meta-item--alt { color: #6d28d9; }
+.drug-card__meta-item--alt {
+  color: #7c3aed;
+}
 
-/* ── Footer ────────────────────────────────────────────────── */
+.drug-card__meta-item--alt i {
+  color: #a78bfa;
+}
+
+/* ── Footer (price + AI) ───────────────────────────────────── */
 
 .drug-card__footer {
   display: flex;
-  align-items: flex-end;
+  align-items: center;
   justify-content: space-between;
+  padding: 12px 0;
+  border-top: 1px solid rgba(0, 0, 0, 0.06);
+  border-bottom: 1px solid rgba(0, 0, 0, 0.06);
   margin-top: auto;
-  padding-top: 10px;
-  border-top: 1px solid #f1f5f9;
-  gap: 8px;
 }
 
 .drug-card__price {
@@ -239,14 +255,16 @@
 .drug-card__price-label {
   font-size: 10px;
   color: #94a3b8;
+  font-weight: 500;
   text-transform: uppercase;
-  letter-spacing: 0.04em;
+  letter-spacing: 0.4px;
 }
 
 .drug-card__price-value {
-  font-size: 18px;
-  font-weight: 700;
-  color: #1e293b;
+  font-family: 'Space Grotesk', 'Inter', sans-serif;
+  font-size: 20px;
+  font-weight: 800;
+  color: #0ea5e9;
   line-height: 1;
 }
 
@@ -255,37 +273,71 @@
 .drug-card__ai-btn {
   display: inline-flex;
   align-items: center;
-  justify-content: center;
   gap: 6px;
-  padding: 8px 14px;
+  padding: 7px 13px;
+  background: #f0f9ff;
+  border: 1px solid #bae6fd;
   border-radius: 10px;
   font-size: 12px;
   font-weight: 600;
+  color: #0284c7;
   cursor: pointer;
-  border: 1.5px solid #6d28d9;
-  background: #f5f3ff;
-  color: #6d28d9;
-  transition: background 0.15s, color 0.15s, transform 0.12s, box-shadow 0.15s;
-  white-space: nowrap;
-  flex-shrink: 0;
+  font-family: 'Inter', sans-serif;
+  transition: background 0.2s ease, border-color 0.2s ease, transform 0.2s ease;
 }
 
 .drug-card__ai-btn i {
-  font-size: 15px;
+  font-size: 12px;
 }
 
 .drug-card__ai-btn:hover {
-  background: #6d28d9;
-  color: #ffffff;
-  transform: scale(1.04);
-  box-shadow: 0 4px 14px rgba(109, 40, 217, 0.35);
+  background: #e0f2fe;
+  border-color: #7dd3fc;
+  transform: scale(1.03);
 }
 
 .drug-card__ai-btn:active {
-  transform: scale(0.97);
+  transform: scale(0.98);
 }
 
-/* ── Mobile: icon-only AI button ───────────────────────────── */
+/* ── View Details button ───────────────────────────────────── */
+
+.drug-card__details-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  width: 100%;
+  padding: 10px;
+  background: rgba(14, 165, 233, 0.06);
+  border: 1px solid rgba(14, 165, 233, 0.18);
+  border-radius: 10px;
+  color: #0284c7;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  font-family: 'Inter', sans-serif;
+  transition: background 0.25s ease, border-color 0.25s ease,
+    color 0.25s ease, box-shadow 0.25s ease;
+}
+
+.drug-card__details-btn i {
+  font-size: 12px;
+  transition: transform 0.2s ease;
+}
+
+.drug-card__details-btn:hover {
+  background: #0ea5e9;
+  border-color: #0ea5e9;
+  color: #fff;
+  box-shadow: 0 4px 16px rgba(14, 165, 233, 0.35);
+}
+
+.drug-card__details-btn:hover i {
+  transform: translateX(3px);
+}
+
+/* ── Mobile: icon-only AI ──────────────────────────────────── */
 
 @media (max-width: 600px) {
   .drug-card__ai-label {
@@ -293,141 +345,33 @@
   }
 
   .drug-card__ai-btn {
-    width: 36px;
-    height: 36px;
+    width: 34px;
+    height: 34px;
     padding: 0;
     border-radius: 50%;
-  }
-
-  .drug-card__ai-btn i {
-    font-size: 16px;
+    justify-content: center;
   }
 }
 
-/* ============================================================
-   RESPONSIVE — single column on mobile
-   ============================================================ */
 
-@media (max-width: 600px) {
-  .drug-card {
-    flex-direction: row;       /* horizontal layout */
-    border-radius: 14px;
-    min-height: 120px;
-  }
-
-  .drug-card__image-wrap {
-    width: 110px;
-    height: auto;              /* stretches to card height */
-    flex-shrink: 0;
-    border-radius: 0;
-  }
-
-  .drug-card__image {
-    padding: 8px;
-  }
-
-  .drug-card__image-fallback i {
-    font-size: 36px;
-  }
-
-  /* hide availability badge on mobile — saves space */
-  .drug-card__availability {
-    display: none;
-  }
-
-  .drug-card__body {
-    padding: 12px 14px 12px;
-    gap: 7px;
-    justify-content: space-between;
-  }
-
-  .drug-card__name {
-    font-size: 14px;
-    -webkit-line-clamp: 1;
-  }
-
-  .drug-card__sub {
-    font-size: 11px;
-  }
-
-  /* hide dosage form badge on mobile */
-  .badge--form {
-    display: none;
-  }
-
-  .drug-card__meta {
-    gap: 8px;
-  }
-
-  .drug-card__meta-item {
-    font-size: 11px;
-  }
-
-  .drug-card__price-value {
-    font-size: 16px;
-  }
-
-  .drug-card__price-label {
-    display: none;
-  }
-
-  .drug-card__footer {
-    padding-top: 8px;
-    align-items: center;
-  }
+.drug-card__fav-btn.pop {
+  animation: favBtnPop 0.42s cubic-bezier(0.34, 1.56, 0.64, 1);
 }
 
-/* ============================================================
-   Dark mode
-   ============================================================ */
-
-@media (prefers-color-scheme: dark) {
-  .drug-card {
-    background: #1e2433;
-    border-color: #2d3748;
+@keyframes favBtnPop {
+  0% {
+    transform: scale(1);
   }
 
-  .drug-card:hover {
-    border-color: #4a6fa5;
-    box-shadow: 0 8px 28px rgba(0, 0, 0, 0.35);
+  30% {
+    transform: scale(1.35);
   }
 
-  .drug-card__image-wrap { background: #161b27; }
-  .drug-card__image-fallback { color: #4a5568; }
-
-  .drug-card__fav-btn {
-    background: rgba(30, 36, 51, 0.9);
-    border-color: #2d3748;
-    color: #64748b;
+  55% {
+    transform: scale(0.85);
   }
 
-  .drug-card__name  { color: #e2e8f0; }
-  .drug-card__sub   { color: #94a3b8; }
-
-  .badge--category {
-    background: #1e3a5f;
-    color: #93c5fd;
-    border-color: #2563eb44;
-  }
-
-  .badge--form {
-    background: #1e2433;
-    color: #94a3b8;
-    border-color: #2d3748;
-  }
-
-  .drug-card__meta-item { color: #94a3b8; }
-  .drug-card__footer    { border-color: #2d3748; }
-  .drug-card__price-value { color: #e2e8f0; }
-
-  .drug-card__ai-btn {
-    border-color: #7c3aed;
-    background: #2e1f4a;
-    color: #c4b5fd;
-  }
-
-  .drug-card__ai-btn:hover {
-    background: #6d28d9;
-    color: #ffffff;
+  100% {
+    transform: scale(1);
   }
 }

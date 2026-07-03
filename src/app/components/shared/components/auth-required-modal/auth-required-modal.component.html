@@ -1,0 +1,43 @@
+<div
+  class="modal-backdrop"
+  (click)="closeModal()"
+>
+
+  <div
+    class="modal"
+    (click)="$event.stopPropagation()"
+  >
+
+    <div class="modal-icon">
+      <i class="fa-regular fa-heart"></i>
+    </div>
+
+    <h2>Login Required</h2>
+
+    <p>
+      Sign in to save medicines to your favorites,
+      receive notifications, and enjoy all MediSearch
+      features.
+    </p>
+
+    <div class="modal-actions">
+
+      <button
+        class="cancel-btn"
+        (click)="closeModal()"
+      >
+        Continue Browsing
+      </button>
+
+      <button
+        class="login-btn"
+        (click)="goToLogin()"
+      >
+        Login
+      </button>
+
+    </div>
+
+  </div>
+
+</div>

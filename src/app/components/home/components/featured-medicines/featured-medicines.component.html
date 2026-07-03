@@ -1,0 +1,68 @@
+<section class="section featured-medicines">
+  <div class="container">
+
+    <div class="section-header">
+      <span class="section-label">Discover</span>
+      <h2 class="section-title">Explore Medicines</h2>
+      <p class="section-desc">Discover medicines from different categories.</p>
+    </div>
+
+    @if (loading()) {
+
+    <div class="medicines-loading">
+      @for (i of [1,2,3,4,5,6,7,8]; track i) {
+      <div class="medicine-skeleton">
+        <div class="ms-image"></div>
+        <div class="ms-body">
+          <div class="ms-line ms-line--title"></div>
+          <div class="ms-line ms-line--sub"></div>
+          <div class="ms-footer">
+            <div class="ms-price"></div>
+            <div class="ms-btn"></div>
+          </div>
+        </div>
+      </div>
+      }
+    </div>
+
+    } @else {
+
+    <div class="medicines-grid">
+      @for (medicine of medicines(); track medicine.id) {
+      <app-drug-card [drug]="medicine" (favoriteToggled)="onFavorite($event)" (cardClicked)="onCardClick($event)" />
+      }
+    </div>
+
+    @if (hasMore()) {
+
+    <div class="section-actions">
+      <button class="load-btn" (click)="loadMore()" [disabled]="loadingMore()">
+        @if (loadingMore()) { Loading... } @else { Load More }
+      </button>
+    </div>
+
+    } @else {
+
+    <div class="section-actions section-actions--end">
+      <p class="section-actions__hint">Can't find what you're looking for?</p>
+
+      <button #searchTrigger type="button" class="mini-search-trigger" (click)="openSearch()">
+        <i class="fa-solid fa-magnifying-glass"></i>
+        <span>Search medicines...</span>
+      </button>
+    </div>
+
+    }
+
+    }
+
+  </div>
+</section>
+
+@if (showSearchOverlay) {
+<app-search-overlay [heroSearchRect]="heroSearchRect" (closed)="closeSearch()" />
+}
+@if (showAuthModal()) {
+<app-auth-required-modal (close)="showAuthModal.set(false)" />
+}
+

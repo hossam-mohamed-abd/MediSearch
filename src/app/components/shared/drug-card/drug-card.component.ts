@@ -1,5 +1,7 @@
-import { Component, Input, Output, EventEmitter } from '@angular/core';
+import { Component, Input, Output, EventEmitter, inject } from '@angular/core';
 import { Router } from '@angular/router';
+import { AuthStateService } from '../../../core/services/auth-state';
+import { FavoriteFlyService } from '../../../core/services/favorite-fly.service';
 
 export interface Drug {
   id: number;
@@ -36,6 +38,9 @@ export class DrugCardComponent {
 
   imageError = false;
 
+  private authState = inject(AuthStateService);
+  private favoriteFlyService = inject(FavoriteFlyService);
+
   constructor(private router: Router) {}
 
   get displayImage(): string {
@@ -48,7 +53,24 @@ export class DrugCardComponent {
 
   onFavoriteClick(event: MouseEvent): void {
     event.stopPropagation();
+
+    const willBeFavorite = !this.drug.is_favorite;
+
+    // Only play the animation when the user is actually logged in and
+    // the drug is about to be added (not removed) — otherwise the
+    // auth modal will show instead and there's nothing to celebrate.
+    if (willBeFavorite && this.authState.isLoggedIn()) {
+      const btn = event.currentTarget as HTMLElement;
+      this.triggerLocalPop(btn);
+      this.favoriteFlyService.fly(btn);
+    }
+
     this.favoriteToggled.emit(this.drug);
+  }
+
+  private triggerLocalPop(btn: HTMLElement): void {
+    btn.classList.add('pop');
+    setTimeout(() => btn.classList.remove('pop'), 420);
   }
 
   onCardClick(): void {

@@ -1,13 +1,12 @@
 <article
   class="drug-card"
-  (click)="onCardClick()"
   role="button"
   [attr.aria-label]="'View details for ' + drug.name"
   tabindex="0"
   (keydown.enter)="onCardClick()"
 >
 
-  <!-- Image -->
+  <!-- ── Image ── -->
   <div class="drug-card__image-wrap">
     @if (!imageError) {
       <img
@@ -50,15 +49,11 @@
     </span>
   </div>
 
-  <!-- Body -->
+  <!-- ── Body ── -->
   <div class="drug-card__body">
 
-    <div class="drug-card__header">
-      <h3 class="drug-card__name">{{ drug.name }}</h3>
-      <p class="drug-card__sub">{{ drug.active_substance }} · {{ drug.manufacturer }}</p>
-    </div>
-
-    <div class="drug-card__badges">
+    <!-- Meta row: category + availability label -->
+    <div class="drug-card__meta-top">
       @if (drug.category_name) {
         <span class="badge badge--category">{{ drug.category_name }}</span>
       }
@@ -67,6 +62,13 @@
       }
     </div>
 
+    <!-- Name & substance -->
+    <div class="drug-card__header">
+      <h3 class="drug-card__name">{{ drug.name }}</h3>
+      <p class="drug-card__sub">{{ drug.active_substance }} · {{ drug.manufacturer }}</p>
+    </div>
+
+    <!-- Pharmacies + alternatives -->
     <div class="drug-card__meta">
       @if (drug.pharmacy_count !== undefined) {
         <span class="drug-card__meta-item">
@@ -82,7 +84,7 @@
       }
     </div>
 
-    <!-- Footer -->
+    <!-- Price + AI -->
     <div class="drug-card__footer">
       <div class="drug-card__price">
         <span class="drug-card__price-label">Starting from</span>
@@ -101,6 +103,12 @@
         <span class="drug-card__ai-label">Ask AI</span>
       </button>
     </div>
+
+    <!-- View Details button -->
+    <button class="drug-card__details-btn" (click)="onCardClick()">
+      View Details
+      <i class="fa-solid fa-arrow-right" aria-hidden="true"></i>
+    </button>
 
   </div>
 </article>
