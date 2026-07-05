@@ -2,22 +2,11 @@
 
 <canvas #trailCanvas class="trail-canvas"></canvas>
 
-<div
-  class="chat-backdrop"
-  [class.visible]="isChatOpen"
-  (click)="closeChat()"
-></div>
+<div class="chat-backdrop" [class.visible]="isChatOpen" (click)="closeChat()"></div>
 
 <!-- FAB — Glassmorphism -->
-<div
-  class="chat-fab-wrapper"
-  [class.hidden]="isChatOpen || isAnimating"
->
-  <button
-    class="chat-fab"
-    (click)="openChat()"
-    aria-label="افتح مساعد MediSearch"
-  >
+<div class="chat-fab-wrapper" [class.hidden]="isChatOpen || isAnimating">
+  <button class="chat-fab" (click)="openChat()" aria-label="افتح مساعد MediSearch">
     <div class="fab-ring fab-ring-1"></div>
     <div class="fab-ring fab-ring-2"></div>
     <div class="fab-ring fab-ring-3"></div>
@@ -30,15 +19,8 @@
 </div>
 
 <!-- Chat Widget -->
-<div
-  class="chat-widget"
-  [class.open]="isChatOpen"
-  [class.closing]="isClosing"
-  role="dialog"
-  aria-label="مساعد MediSearch الذكي"
-  aria-modal="true"
-  #chatWidget
->
+<div class="chat-widget" [class.open]="isChatOpen" [class.closing]="isClosing" role="dialog"
+  aria-label="مساعد MediSearch الذكي" aria-modal="true" #chatWidget>
 
   <!-- Header — Gradient Mesh -->
   <div class="chat-header">
@@ -74,11 +56,7 @@
     <div class="chat-date-sep"><span>اليوم</span></div>
 
     <!-- Intro messages -->
-    <div
-      class="msg msg-ai intro-msg"
-      *ngFor="let msg of introMessages"
-      [class.visible]="msg.visible"
-    >
+    <div class="msg msg-ai intro-msg" *ngFor="let msg of introMessages" [class.visible]="msg.visible">
       <div class="msg-avatar">
         <i class="fa-solid fa-robot"></i>
       </div>
@@ -91,15 +69,13 @@
     <!-- Suggestion chips -->
     <div class="suggestion-chips" [class.visible]="showSuggestions">
       <span class="chips-label">جرب تسأل عن:</span>
-      <button
-        class="s-chip"
-        *ngFor="let s of suggestions"
-        (click)="sendSuggestion(s)"
-      >{{ s }}</button>
+      <button class="s-chip" *ngFor="let s of suggestions" (click)="sendSuggestion(s)">{{ s }}</button>
     </div>
 
     <!-- Dynamic messages -->
     <ng-container *ngFor="let msg of messages">
+
+      <!-- User bubble -->
       <div class="msg msg-user" *ngIf="msg.role === 'user'">
         <div class="msg-bubble user-bubble">
           <span>{{ msg.text }}</span>
@@ -110,13 +86,97 @@
         </div>
       </div>
 
-      <div class="msg msg-ai" *ngIf="msg.role === 'ai'">
+      <!-- Plain AI text bubble -->
+      <div class="msg msg-ai" *ngIf="msg.role === 'ai' && msg.kind === 'text'">
         <div class="msg-avatar">
           <i class="fa-solid fa-robot"></i>
         </div>
         <div class="msg-bubble">
-          <span [innerHTML]="msg.text"></span>
+          <span>{{ msg.text }}</span>
           <div class="msg-time">{{ msg.time }}</div>
+        </div>
+      </div>
+
+      <!-- Error bubble -->
+      <div class="msg msg-ai" *ngIf="msg.role === 'ai' && msg.kind === 'error'">
+        <div class="msg-avatar">
+          <i class="fa-solid fa-robot"></i>
+        </div>
+        <div class="msg-bubble error-bubble">
+          <i class="fa-solid fa-triangle-exclamation"></i>
+          <span>{{ msg.text }}</span>
+        </div>
+      </div>
+
+      <!-- Auth required card -->
+      <div class="msg msg-ai" *ngIf="msg.role === 'ai' && msg.kind === 'auth-required'">
+        <div class="msg-avatar">
+          <i class="fa-solid fa-robot"></i>
+        </div>
+        <div class="msg-bubble auth-bubble">
+          <div class="auth-bubble__icon">
+            <i class="fa-solid fa-lock"></i>
+          </div>
+          <h4>سجل حسابك عشان أقدر أساعدك</h4>
+          <p>عشان أجاوبك على أسئلتك الطبية وأديك تفاصيل الأدوية، محتاج تسجل دخولك الأول أو تعمل حساب جديد.</p>
+          <div class="auth-bubble__actions">
+            <button class="auth-bubble__primary" (click)="goToRegister()">إنشاء حساب</button>
+            <button class="auth-bubble__secondary" (click)="goToLogin()">تسجيل الدخول</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Medicine / Alternative card -->
+      <!-- Nearby pharmacies -->
+      <div class="msg msg-ai" *ngIf="msg.role === 'ai' && msg.kind === 'pharmacies'">
+        <div class="msg-avatar">
+          <i class="fa-solid fa-robot"></i>
+        </div>
+        <div class="msg-bubble pharmacy-list">
+          <span class="pharmacy-list__title">أقرب صيدليات ليك</span>
+
+          <div class="pharmacy-item" *ngFor="let ph of msg.pharmacies">
+            <button class="pharmacy-item__map" (click)="openPharmacyOnMaps(ph)" aria-label="افتح في خرائط جوجل">
+              <img [src]="ph.staticMapUrl" [alt]="ph.name" loading="lazy" />
+              <span class="pharmacy-item__map-overlay">
+                <i class="fa-solid fa-map-location-dot"></i>
+                افتح في خرائط جوجل
+              </span>
+            </button>
+
+            <div class="pharmacy-item__info">
+              <h5>{{ ph.name }}</h5>
+              <p *ngIf="ph.address">{{ ph.address }}</p>
+            </div>
+          </div>
+
+          <p class="pharmacy-list__note">
+            التوفر التقريبي فقط، يفضل الاتصال بالصيدلية للتأكد قبل التوجه.
+          </p>
+        </div>
+      </div>
+
+      <!-- Pharmacies unavailable -->
+      <div class="msg msg-ai" *ngIf="msg.role === 'ai' && msg.kind === 'pharmacies-unavailable'">
+        <div class="msg-avatar">
+          <i class="fa-solid fa-robot"></i>
+        </div>
+        <div class="msg-bubble pharmacy-missing" *ngIf="msg.unavailableReason === 'no_city'">
+          <div class="pharmacy-missing__icon">
+            <i class="fa-solid fa-location-crosshairs"></i>
+          </div>
+          <h4>محدّدتش مدينتك لسه</h4>
+          <p>ضيف مدينتك في إعدادات حسابك عشان أقدر أطلعلك أقرب صيدليات ليك في المرة الجاية.</p>
+          <button class="pharmacy-missing__btn" (click)="goToProfile()">تحديث الإعدادات</button>
+        </div>
+
+        <div class="msg-bubble pharmacy-missing"
+          *ngIf="msg.unavailableReason === 'not_found' || msg.unavailableReason === 'error'">
+          <div class="pharmacy-missing__icon">
+            <i class="fa-solid fa-map-location-dot"></i>
+          </div>
+          <h4>مقدرتش ألاقي صيدليات قريبة دلوقتي</h4>
+          <p>جرب تاني بعد شوية، أو استخدم البحث الرئيسي للموقع للاطلاع على الصيدليات المتاحة.</p>
         </div>
       </div>
     </ng-container>
@@ -137,11 +197,7 @@
 
   <!-- Quick Replies -->
   <div class="quick-replies" *ngIf="quickReplies.length > 0">
-    <button
-      class="quick-reply"
-      *ngFor="let r of quickReplies"
-      (click)="sendSuggestion(r)"
-    >{{ r }}</button>
+    <button class="quick-reply" *ngFor="let r of quickReplies" (click)="sendSuggestion(r)">{{ r }}</button>
   </div>
 
   <!-- Input -->
@@ -150,21 +206,9 @@
       <button class="input-icon-btn" aria-label="إرفاق">
         <i class="fa-solid fa-paperclip"></i>
       </button>
-      <input
-        class="chat-input"
-        type="text"
-        placeholder="اكتب اسم الدواء أو سؤالك..."
-        [(ngModel)]="inputText"
-        (keydown.enter)="sendMessage()"
-        [disabled]="isTyping"
-        #chatInput
-      />
-      <button
-        class="send-btn"
-        (click)="sendMessage()"
-        [disabled]="!inputText.trim() || isTyping"
-        aria-label="إرسال"
-      >
+      <input class="chat-input" type="text" placeholder="اكتب اسم الدواء أو سؤالك..." [(ngModel)]="inputText"
+        (keydown.enter)="sendMessage()" [disabled]="isTyping" #chatInput />
+      <button class="send-btn" (click)="sendMessage()" [disabled]="!inputText.trim() || isTyping" aria-label="إرسال">
         <i class="fa-solid fa-paper-plane"></i>
       </button>
     </div>
