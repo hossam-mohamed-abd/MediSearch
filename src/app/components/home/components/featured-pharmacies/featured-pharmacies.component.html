@@ -1,4 +1,4 @@
-<section class="section pharmacies">
+<section class="section pharmacies" id="featured-pharmacies" >
   <div class="container">
 
     <div class="section-header">
@@ -30,7 +30,7 @@
       }
 
       @for (pharmacy of pharmacies; track pharmacy.id) {
-      <div class="pharmacy-card" (click)="onCardClick(pharmacy)">
+      <div class="pharmacy-card" [routerLink]="['/pharmacies', pharmacy.id]">
 
         <div class="pharmacy-cover">
           @if (pharmacy.logo_url) {

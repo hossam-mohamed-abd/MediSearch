@@ -1,7 +1,5 @@
 <div class="navbar-wrapper">
-
   <nav class="navbar" [class.scrolled]="isScrolled">
-
     <div class="navbar-inner">
 
       <!-- Logo -->
@@ -14,21 +12,113 @@
 
       <!-- Links -->
       <ul class="nav-links">
-        <li><a routerLink="/" routerLinkActive="active" [routerLinkActiveOptions]="{exact:true}" class="nav-link"><i
-              class="fa-solid fa-house"></i><span>Home</span></a></li>
-        <li><a routerLink="/medicines" routerLinkActive="active" class="nav-link"><i
-              class="fa-solid fa-pills"></i><span>Medicines</span></a></li>
-        <li><a routerLink="/pharmacies" routerLinkActive="active" class="nav-link"><i
-              class="fa-solid fa-hospital"></i><span>Pharmacies</span></a></li>
-        <li><a routerLink="/categories" routerLinkActive="active" class="nav-link"><i
-              class="fa-solid fa-layer-group"></i><span>Categories</span></a></li>
-        <li><a routerLink="/trending" routerLinkActive="active" class="nav-link"><i
-              class="fa-solid fa-fire"></i><span>Trending</span></a></li>
-        <li><a routerLink="/compare" routerLinkActive="active" class="nav-link"><i
-              class="fa-solid fa-scale-balanced"></i><span>Compare</span></a></li>
+        <li>
+          <a routerLink="/" routerLinkActive="active" [routerLinkActiveOptions]="{exact:true}" class="nav-link">
+            <i class="fa-solid fa-house"></i><span>Home</span>
+          </a>
+        </li>
+        <li>
+          <a class="nav-link" (click)="scrollToSection('featured-medicines')" [class.active]="false"
+            style="cursor:pointer">
+            <i class="fa-solid fa-pills"></i><span>Medicines</span>
+          </a>
+        </li>
+
+        <!-- Pharmacies with dropdown -->
+        <li class="nav-item-dropdown" (mouseenter)="onPharmaciesHover()" (mouseleave)="closePharmaciesDropdown()">
+          <a class="nav-link" (click)="scrollToSection('featured-pharmacies')" style="cursor:pointer">
+            <i class="fa-solid fa-hospital"></i><span>Pharmacies</span>
+            <i class="fa-solid fa-chevron-down nav-chevron" [class.nav-chevron--open]="isPharmaciesDropdownOpen"></i>
+          </a>
+
+          <div class="nav-dropdown" [class.show]="isPharmaciesDropdownOpen">
+            <div class="nav-dropdown-header">
+              <span>Popular Pharmacies</span>
+            </div>
+
+            @if (pharmaciesLoading) {
+            <div class="nav-dropdown-loading">
+              @for (i of [1,2,3,4]; track i) {
+              <div class="nav-dropdown-skeleton"></div>
+              }
+            </div>
+            } @else {
+            @for (pharmacy of previewPharmacies; track pharmacy.id) {
+            <div class="nav-dropdown-item" [routerLink]="['/pharmacies', pharmacy.id]">
+              <div class="nav-dropdown-avatar">
+                @if (pharmacy.logo_url) {
+                <img [src]="pharmacy.logo_url" [alt]="pharmacy.name" />
+                } @else {
+                <span>{{ pharmacy.name?.charAt(0) }}</span>
+                }
+              </div>
+              <div class="nav-dropdown-info">
+                <h4>{{ pharmacy.name }}</h4>
+                <p>
+                  <i class="fa-solid fa-location-dot"></i>
+                  {{ pharmacy.city_name }}
+                </p>
+              </div>
+              <div class="nav-dropdown-rating">
+                <i class="fa-solid fa-star"></i>
+                {{ pharmacy.avg_rating }}
+              </div>
+            </div>
+            }
+            }
+
+            <div class="nav-dropdown-footer">
+              <button class="nav-dropdown-all-btn" (click)="scrollToSection('featured-pharmacies')">
+                <i class="fa-solid fa-store"></i>
+                Explore All Pharmacies
+              </button>
+            </div>
+          </div>
+        </li>
+
+        <!-- Categories with dropdown -->
+        <li class="nav-item-dropdown" (mouseenter)="onCategoriesHover()" (mouseleave)="closeCategoriesDropdown()">
+          <a class="nav-link" (click)="scrollToSection('categories')" style="cursor:pointer">
+            <i class="fa-solid fa-layer-group"></i><span>Categories</span>
+            <i class="fa-solid fa-chevron-down nav-chevron" [class.nav-chevron--open]="isCategoriesDropdownOpen"></i>
+          </a>
+
+          <div class="nav-dropdown" [class.show]="isCategoriesDropdownOpen">
+            <div class="nav-dropdown-header">
+              <span>Medicine Categories</span>
+            </div>
+
+            @if (categoriesLoading) {
+            <div class="nav-dropdown-loading">
+              @for (i of [1,2,3,4]; track i) {
+              <div class="nav-dropdown-skeleton"></div>
+              }
+            </div>
+            } @else {
+            @for (cat of previewCategories; track cat.id) {
+            <div class="nav-dropdown-item" (click)="scrollToSection('categories')">
+              <div class="nav-dropdown-avatar nav-dropdown-avatar--cat">
+                <i class="fa-solid fa-capsules"></i>
+              </div>
+              <div class="nav-dropdown-info">
+                <h4>{{ cat.name }}</h4>
+                <p>{{ cat.description }}</p>
+              </div>
+            </div>
+            }
+            }
+
+            <div class="nav-dropdown-footer">
+              <button class="nav-dropdown-all-btn" (click)="scrollToSection('categories')">
+                <i class="fa-solid fa-layer-group"></i>
+                Browse All Categories
+              </button>
+            </div>
+          </div>
+        </li>
       </ul>
 
-      <!-- Search box — #navSearchBox للـ FLIP -->
+      <!-- Search box -->
       <div class="search-box" #navSearchBox (click)="openSearch()">
         <i class="fa-solid fa-magnifying-glass search-icon"></i>
         <input type="text" placeholder="Search medicines..." readonly style="cursor: pointer;" />
@@ -39,55 +129,34 @@
 
         <!-- Favorites -->
         <div class="favorites-wrapper">
-
           <button class="icon-btn" data-fav-nav-icon (click)="toggleFavorites()">
             <i class="fa-regular fa-heart"></i>
-
             @if (favoriteCount() > 0) {
-            <span class="badge">
-              {{ favoriteCount() }}
-            </span>
+            <span class="badge">{{ favoriteCount() }}</span>
             }
           </button>
 
-
           <div class="favorites-dropdown" [class.show]="isFavoritesOpen">
-
             @if (favorites().length === 0) {
-
-            <div class="empty-favorites">
-              No favorite medicines yet
-            </div>
-
+            <div class="empty-favorites">No favorite medicines yet</div>
             } @else {
-
             @for (item of favorites(); track item.id) {
-
             <div class="favorite-item">
-
               <img [src]="item.image_url" alt="">
-
               <div class="favorite-info">
                 <h4>{{ item.name }}</h4>
                 <p>{{ item.active_substance }}</p>
               </div>
-
-              <button class="view-btn" [routerLink]="['/medicines', item.id]">
-                View Details
+              <button class="view-btn" [routerLink]="['/drugs', item.id]">
+                View
               </button>
-
               <button class="remove-btn" (click)="onRemoveFavorite(item.id, $event)" aria-label="Remove from favorites">
                 <i class="fa-solid fa-xmark"></i>
               </button>
-
             </div>
-
             }
-
             }
-
           </div>
-
         </div>
 
         <!-- Notifications -->
@@ -100,7 +169,6 @@
           </button>
 
           <div class="notif-dropdown" [class.show]="isNotificationsOpen">
-
             <div class="notif-header">
               <div class="notif-header-left">
                 <div class="notif-header-icon">
@@ -142,11 +210,9 @@
               <div class="notif-list">
                 @for (item of notifications(); track item.id) {
                 <div class="notif-item" [class.notif-item--unread]="!item.is_read">
-
                   <div class="notif-item-icon">
                     <i class="fa-regular fa-bell"></i>
                   </div>
-
                   <div class="notif-item-content">
                     <p class="notif-item-title">{{ item.title }}</p>
                     <p class="notif-item-msg">{{ item.message }}</p>
@@ -157,14 +223,12 @@
                     </span>
                     }
                   </div>
-
                   <div class="notif-item-actions">
                     <button class="notif-item-btn notif-item-btn--del" (click)="deleteNotification(item.id, $event)"
                       title="Delete">
                       <i class="fa-solid fa-xmark"></i>
                     </button>
                   </div>
-
                 </div>
                 }
               </div>
@@ -183,34 +247,24 @@
               </button>
             </div>
             }
-
           </div>
         </div>
+
         <!-- Language -->
         <button class="lang-btn">AR</button>
 
         <!-- Auth -->
         <div class="auth-section">
           @if (!isLoggedIn) {
-
           @if (currentUrl === '/login') {
-
           <a routerLink="/register">
-            <button class="signup-btn">
-              Sign Up
-            </button>
+            <button class="signup-btn">Sign Up</button>
           </a>
-
           } @else {
-
           <a routerLink="/login">
-            <button class="signup-btn">
-              Login
-            </button>
+            <button class="signup-btn">Login</button>
           </a>
-
           }
-
           } @else {
           <div class="profile-wrapper">
             <div class="profile-menu" (click)="toggleProfileMenu()">
@@ -243,42 +297,48 @@
                 </div>
               </div>
               <a routerLink="/profile"><i class="fa-regular fa-user"></i>Profile</a>
-              <a routerLink="/history"><i class="fa-solid fa-clock-rotate-left"></i>Search History</a>
+              <a routerLink="/history">
+                <i class="fa-solid fa-clock-rotate-left"></i>Search History
+              </a>
               <a routerLink="/settings"><i class="fa-solid fa-gear"></i>Settings</a>
-              <a class="logout" (click)="logout()"><i class="fa-solid fa-right-from-bracket"></i>Logout</a>
+              <a class="logout" (click)="logout()">
+                <i class="fa-solid fa-right-from-bracket"></i>Logout
+              </a>
             </div>
           </div>
           }
         </div>
 
-        <!-- Mobile search icon -->
+        <!-- Mobile search -->
         <button class="icon-btn mobile-search-btn" (click)="openSearch()" aria-label="Search">
           <i class="fa-solid fa-magnifying-glass"></i>
         </button>
 
         <!-- Mobile menu toggle -->
         <button class="menu-btn" (click)="toggleMenu()" aria-label="Menu">
-          <i class="fa-solid" [class.fa-bars]="!isMenuOpen" [class.fa-xmark]="isMenuOpen">
-          </i>
+          <i class="fa-solid" [class.fa-bars]="!isMenuOpen" [class.fa-xmark]="isMenuOpen"></i>
         </button>
-
       </div>
     </div>
 
     <!-- Mobile Menu -->
     <div class="mobile-menu" [class.show]="isMenuOpen">
       <div class="mobile-links">
-        <a routerLink="/" (click)="toggleMenu()"><i class="fa-solid fa-house"></i>Home</a>
-        <a routerLink="/medicines" (click)="toggleMenu()"><i class="fa-solid fa-pills"></i>Medicines</a>
-        <a routerLink="/pharmacies" (click)="toggleMenu()"><i class="fa-solid fa-hospital"></i>Pharmacies</a>
-        <a routerLink="/categories" (click)="toggleMenu()"><i class="fa-solid fa-layer-group"></i>Categories</a>
-        <a routerLink="/trending" (click)="toggleMenu()"><i class="fa-solid fa-fire"></i>Trending</a>
-        <a routerLink="/compare" (click)="toggleMenu()"><i class="fa-solid fa-scale-balanced"></i>Compare</a>
+        <a routerLink="/" (click)="toggleMenu()">
+          <i class="fa-solid fa-house"></i>Home
+        </a>
+        <a (click)="scrollToSection('featured-medicines'); toggleMenu()">
+          <i class="fa-solid fa-pills"></i>Medicines
+        </a>
+        <a (click)="scrollToSection('featured-pharmacies'); toggleMenu()">
+          <i class="fa-solid fa-hospital"></i>Pharmacies
+        </a>
+        <a (click)="scrollToSection('categories'); toggleMenu()">
+          <i class="fa-solid fa-layer-group"></i>Categories
+        </a>
       </div>
     </div>
-
   </nav>
-
 </div>
 
 @if (showSearchOverlay) {
