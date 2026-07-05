@@ -126,7 +126,62 @@
         </div>
       </div>
 
-      <!-- Medicine / Alternative card -->
+      <!-- Medicine / Alternative card — with pros & cons table -->
+      <div class="msg msg-ai"
+        *ngIf="msg.role === 'ai' && (msg.kind === 'medicine-card' || msg.kind === 'alternative-card')">
+        <div class="msg-avatar">
+          <i class="fa-solid fa-robot"></i>
+        </div>
+        <div class="msg-bubble med-card" [class.med-card--alt]="msg.kind === 'alternative-card'">
+          <span class="med-card__tag" *ngIf="msg.kind === 'alternative-card'">بديل مقترح</span>
+
+          <h4 class="med-card__name">{{ msg.card?.name }}</h4>
+
+          <div class="med-card__meta" *ngIf="msg.card?.activeSubstance || msg.card?.dosageForm || msg.card?.strength">
+            <span class="med-card__badge" *ngIf="msg.card?.activeSubstance">
+              {{ msg.card?.activeSubstance }}
+            </span>
+            <span class="med-card__badge" *ngIf="msg.card?.dosageForm">
+              {{ msg.card?.dosageForm }}
+            </span>
+            <span class="med-card__badge" *ngIf="msg.card?.strength">
+              {{ msg.card?.strength }}
+            </span>
+          </div>
+
+          <p class="med-card__reason" *ngIf="cardReason(msg)">
+            {{ cardReason(msg) }}
+          </p>
+
+          <!-- Pros & Cons -->
+          <div class="pros-cons" *ngIf="msg.card?.pros?.length || msg.card?.cons?.length">
+            <div class="pros-cons__col pros-cons__col--pros" *ngIf="msg.card?.pros?.length">
+              <span class="pros-cons__label">
+                <i class="fa-solid fa-circle-check"></i>
+                المميزات
+              </span>
+              <ul>
+                <li *ngFor="let p of msg.card?.pros">{{ p }}</li>
+              </ul>
+            </div>
+            <div class="pros-cons__col pros-cons__col--cons" *ngIf="msg.card?.cons?.length">
+              <span class="pros-cons__label">
+                <i class="fa-solid fa-circle-exclamation"></i>
+                الأضرار
+              </span>
+              <ul>
+                <li *ngFor="let c of msg.card?.cons">{{ c }}</li>
+              </ul>
+            </div>
+          </div>
+
+          <button class="msg-search-btn" (click)="searchForMedicine(msg.card!.name)">
+            <i class="fa-solid fa-magnifying-glass"></i>
+            ابحث عن {{ msg.card?.name }}
+          </button>
+        </div>
+      </div>
+
       <!-- Nearby pharmacies -->
       <div class="msg msg-ai" *ngIf="msg.role === 'ai' && msg.kind === 'pharmacies'">
         <div class="msg-avatar">
@@ -179,6 +234,7 @@
           <p>جرب تاني بعد شوية، أو استخدم البحث الرئيسي للموقع للاطلاع على الصيدليات المتاحة.</p>
         </div>
       </div>
+
     </ng-container>
 
     <!-- Typing indicator -->

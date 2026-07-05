@@ -23,7 +23,7 @@
         </div>
 
         <input #searchInput type="text" autocomplete="off" spellcheck="false"
-          [placeholder]="isLoggedIn ? 'Search medicines, active substance...' : 'سجل دخولك عشان تقدر تبحث'"
+          [placeholder]="isLoggedIn ? 'Search medicines, active substance...' : 'Sign in to search'"
           [formControl]="searchControl" [readonly]="!isLoggedIn" (keydown.enter)="onEnter()" />
 
         @if(!isLoggedIn){
@@ -51,26 +51,26 @@
           <i class="fa-solid fa-location-dot"></i>
         </div>
 
-        <h3>اعمل حسابك عشان نعرضلك دوائك في أقرب صيدلية ليك</h3>
+        <h3>Create an account to find your medicine at the nearest pharmacy</h3>
 
         <p>
-          سجّل دلوقتي وشوف السعر والمخزون في الصيدليات القريبة منك،
-          واحفظ أدويتك المفضلة عشان تلاقيها بسهولة في أي وقت.
+          Sign up now to see prices and stock at nearby pharmacies,
+          and save your favorite medicines so you can find them easily anytime.
         </p>
 
         <div class="auth-gate__actions">
           <button class="auth-gate__primary" (click)="goToRegister()">
-            إنشاء حساب مجانًا
+            Create Free Account
             <i class="fa-solid fa-arrow-left"></i>
           </button>
 
           <button class="auth-gate__secondary" (click)="goToLogin()">
-            عندي حساب بالفعل
+            I already have an account
           </button>
         </div>
 
         <button class="auth-gate__skip" (click)="continueAsGuest()">
-          متابعة التصفح بدون تسجيل
+          Continue browsing without signing in
         </button>
 
       </div>
@@ -83,7 +83,7 @@
         <span class="search-loading__dot"></span>
         <span class="search-loading__dot"></span>
         <span class="search-loading__dot"></span>
-        <span class="search-loading__text">جاري البحث...</span>
+        <span class="search-loading__text">Searching...</span>
       </div>
       }
 
@@ -95,8 +95,9 @@
           <div class="search-hint__icon">
             <i class="fa-solid fa-pills"></i>
           </div>
-          <h3>ابحث عن أي دواء</h3>
-          <p>اكتب اسم الدواء، المادة الفعالة، أو الشركة المصنعة وهنجيبلك كل التفاصيل والبدائل.</p>
+          <h3>Search for any medicine</h3>
+          <p>Type a medicine name, active substance, or manufacturer and we'll bring you all the details and
+            alternatives.</p>
         </div>
         }
 
@@ -106,8 +107,8 @@
           <div class="search-hint__icon search-hint__icon--warning">
             <i class="fa-solid fa-keyboard"></i>
           </div>
-          <h3>لسه محتاج حروف أكتر</h3>
-          <p>اكتب 3 أحرف على الأقل عشان نقدر نلاقيلك الدواء المناسب.</p>
+          <h3>A few more characters needed</h3>
+          <p>Type at least 3 characters so we can find the right medicine for you.</p>
         </div>
         }
 
@@ -174,25 +175,18 @@
         </div>
         }
 
-        <div class="search-footer">
-          <button class="view-all-btn" (click)="onSearchButton()">
-            View All Results
-            <i class="fa-solid fa-arrow-right"></i>
-          </button>
-        </div>
-
         <!-- Ask AI — has results -->
         <div class="ai-ask">
           <div class="ai-ask__icon">
             <i class="fa-solid fa-wand-magic-sparkles"></i>
           </div>
           <div class="ai-ask__text">
-            <h4>مش لاقي اللي انت محتاجه بالظبط؟</h4>
-            <p>اسأل الـ AI عن "{{searchControl.value}}" وهيديك تفاصيل أكتر وبدائل مناسبة.</p>
+            <h4>Not finding exactly what you need?</h4>
+            <p>Ask AI about "{{searchControl.value}}" for more details and suitable alternatives.</p>
           </div>
           <button class="ai-ask__btn" (click)="askAI()">
             <i class="fa-solid fa-sparkles"></i>
-            اسأل AI
+            Ask AI
           </button>
         </div>
 
@@ -212,12 +206,12 @@
               <i class="fa-solid fa-wand-magic-sparkles"></i>
             </div>
             <div class="ai-ask__text">
-              <h4>محتاج تفاصيل عن "{{searchControl.value}}"؟</h4>
-              <p>لا تقلق، اسأل الـ AI هتلاقي تفاصيل أي دوا بتسأل عنه.</p>
+              <h4>Need details about "{{searchControl.value}}"?</h4>
+              <p>No worries, ask AI and get full details on any medicine, plus alternatives.</p>
             </div>
             <button class="ai-ask__btn" (click)="askAI()">
               <i class="fa-solid fa-sparkles"></i>
-              اسأل AI
+              Ask AI
             </button>
           </div>
         </div>

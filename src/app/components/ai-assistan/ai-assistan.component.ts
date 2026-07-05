@@ -22,6 +22,7 @@ import {
   AiChatResponse,
 } from '../../core/services/ai.service';
 import { AuthStateService } from '../../core/services/auth-state';
+import { AiChatBridgeService } from '../../core/services/ai-chat-bridge.service';
 
 type ChatBubbleKind =
   | 'text'
@@ -64,27 +65,28 @@ type RevealItem =
 })
 export class AiChatComponent implements OnInit, OnDestroy, AfterViewInit {
   @ViewChild('messagesContainer') messagesContainer!: ElementRef<HTMLDivElement>;
-  @ViewChild('chatInput') chatInput!: ElementRef<HTMLInputElement>;
-  @ViewChild('chatWidget') chatWidgetEl!: ElementRef<HTMLDivElement>;
-  @ViewChild('trailCanvas') trailCanvasRef!: ElementRef<HTMLCanvasElement>;
+  @ViewChild('chatInput')         chatInput!: ElementRef<HTMLInputElement>;
+  @ViewChild('chatWidget')        chatWidgetEl!: ElementRef<HTMLDivElement>;
+  @ViewChild('trailCanvas')       trailCanvasRef!: ElementRef<HTMLCanvasElement>;
 
-  isChatOpen = false;
-  isAnimating = false;
-  isClosing = false;
-  isTyping = false;
+  isChatOpen      = false;
+  isAnimating     = false;
+  isClosing       = false;
+  isTyping        = false;
   showSuggestions = false;
-  isSpiralDone = false;
+  isSpiralDone    = false;
 
-  inputText = '';
+  inputText    = '';
   messages: ChatMessage[] = [];
-  quickReplies: string[] = [];
+  quickReplies: string[]  = [];
 
-  private openTimeout?: ReturnType<typeof setTimeout>;
-  private chunkTimeout?: ReturnType<typeof setTimeout>;
-  private spiralRaf?: number;
-  private chatSub?: Subscription;
+  private openTimeout?:   ReturnType<typeof setTimeout>;
+  private chunkTimeout?:  ReturnType<typeof setTimeout>;
+  private spiralRaf?:     number;
+  private chatSub?:       Subscription;
+  private bridgeSub?:     Subscription;
   private canvas!: HTMLCanvasElement;
-  private ctx!: CanvasRenderingContext2D;
+  private ctx!:    CanvasRenderingContext2D;
 
   introMessages: IntroMessage[] = [
     {
@@ -111,20 +113,31 @@ export class AiChatComponent implements OnInit, OnDestroy, AfterViewInit {
     'أقرب صيدلية فيها Concor',
   ];
 
-  private readonly defaultQuickReplies = ['دواء آخر', 'ابحث بالمادة الفعالة', 'صيدليات قريبة'];
+  private readonly defaultQuickReplies = [
+    'دواء آخر',
+    'ابحث بالمادة الفعالة',
+    'صيدليات قريبة',
+  ];
 
   constructor(
     private cdr: ChangeDetectorRef,
     private aiService: AiService,
     private authState: AuthStateService,
+    private aiChatBridge: AiChatBridgeService,
     private router: Router,
   ) {}
 
-  ngOnInit(): void {}
+  ngOnInit(): void {
+    // Allows any other part of the app (e.g. the search overlay's "Ask AI" button)
+    // to open this chat and ask a question on the user's behalf.
+    this.bridgeSub = this.aiChatBridge.ask$.subscribe((query) => {
+      this.openWithQuestion(query);
+    });
+  }
 
   ngAfterViewInit(): void {
     this.canvas = this.trailCanvasRef.nativeElement;
-    this.ctx = this.canvas.getContext('2d')!;
+    this.ctx    = this.canvas.getContext('2d')!;
     this.resizeCanvas();
     window.addEventListener('resize', () => this.resizeCanvas());
   }
@@ -133,66 +146,66 @@ export class AiChatComponent implements OnInit, OnDestroy, AfterViewInit {
     clearTimeout(this.openTimeout);
     clearTimeout(this.chunkTimeout);
     this.chatSub?.unsubscribe();
+    this.bridgeSub?.unsubscribe();
     if (this.spiralRaf) cancelAnimationFrame(this.spiralRaf);
     window.removeEventListener('resize', () => this.resizeCanvas());
   }
 
   private resizeCanvas(): void {
-    this.canvas.width = window.innerWidth;
+    this.canvas.width  = window.innerWidth;
     this.canvas.height = window.innerHeight;
   }
 
   // ── Open / Close ─────────────────────────────────────────────────────────
 
-  openChat(): void {
-    if (this.isAnimating || this.isChatOpen) return;
+  openChat(onOpened?: () => void): void {
+    if (this.isChatOpen) {
+      onOpened?.();
+      return;
+    }
+
+    if (this.isAnimating) return;
+
     this.isAnimating = true;
     this.cdr.detectChanges();
 
     const fabEl = document.querySelector('.chat-fab') as HTMLElement | null;
-    if (!fabEl) {
-      this._finishOpen();
-      return;
-    }
+    if (!fabEl) { this._finishOpen(undefined, undefined, onOpened); return; }
 
     const fabRect = fabEl.getBoundingClientRect();
-    const fabCX = fabRect.left + fabRect.width / 2;
-    const fabCY = fabRect.top + fabRect.height / 2;
-    const screenCX = window.innerWidth / 2;
+    const fabCX   = fabRect.left + fabRect.width  / 2;
+    const fabCY   = fabRect.top  + fabRect.height / 2;
+    const screenCX = window.innerWidth  / 2;
     const screenCY = window.innerHeight / 2;
 
     this.playBurst(fabCX, fabCY, () => {
       this.playSpiral(fabCX, fabCY, screenCX, screenCY, () => {
         this.clearCanvas();
-        this._finishOpen(screenCX, screenCY);
+        this._finishOpen(screenCX, screenCY, onOpened);
       });
     });
   }
 
-  private _finishOpen(cx?: number, cy?: number): void {
+  private _finishOpen(cx?: number, cy?: number, onOpened?: () => void): void {
     this.positionWidget(cx, cy);
-    this.isChatOpen = true;
+    this.isChatOpen  = true;
     this.isAnimating = false;
     this.cdr.detectChanges();
 
     this.introMessages.forEach((msg, i) => {
-      setTimeout(
-        () => {
-          msg.visible = true;
-          this.scrollToBottom();
-          this.cdr.detectChanges();
-          if (i === this.introMessages.length - 1) {
-            setTimeout(() => {
-              this.showSuggestions = true;
-              this.cdr.detectChanges();
-            }, 400);
-          }
-        },
-        400 + i * 650,
-      );
+      setTimeout(() => {
+        msg.visible = true;
+        this.scrollToBottom();
+        this.cdr.detectChanges();
+        if (i === this.introMessages.length - 1) {
+          setTimeout(() => { this.showSuggestions = true; this.cdr.detectChanges(); }, 400);
+        }
+      }, 400 + i * 650);
     });
 
     setTimeout(() => this.chatInput?.nativeElement.focus(), 700);
+
+    onOpened?.();
   }
 
   closeChat(): void {
@@ -202,39 +215,59 @@ export class AiChatComponent implements OnInit, OnDestroy, AfterViewInit {
 
     setTimeout(() => {
       this.isChatOpen = false;
-      this.isClosing = false;
+      this.isClosing  = false;
       this.clearCanvas();
       this.cdr.detectChanges();
     }, 420);
   }
 
+  /** Opens the chat (if needed) then asks the given question automatically */
+  private openWithQuestion(query: string): void {
+    if (!query?.trim()) return;
+
+    if (this.isAnimating) {
+      // Another open animation is already mid-flight — retry shortly.
+      setTimeout(() => this.openWithQuestion(query), 120);
+      return;
+    }
+
+    this.openChat(() => {
+      setTimeout(() => this.askQueuedQuestion(query), 350);
+    });
+  }
+
+  private askQueuedQuestion(query: string): void {
+    this.inputText = query;
+    this.sendMessage();
+  }
+
   // ── Canvas Animations ────────────────────────────────────────────────────
 
   private playBurst(cx: number, cy: number, onDone: () => void): void {
-    const rings = [
-      { r: 0, maxR: 60, alpha: 1, color: '#0EA5E9', delay: 0 },
-      { r: 0, maxR: 90, alpha: 0.7, color: '#8B5CF6', delay: 60 },
+    const rings   = [
+      { r: 0, maxR: 60,  alpha: 1,   color: '#0EA5E9', delay: 0 },
+      { r: 0, maxR: 90,  alpha: 0.7, color: '#8B5CF6', delay: 60 },
       { r: 0, maxR: 120, alpha: 0.4, color: '#0EA5E9', delay: 120 },
     ];
-    const start = performance.now();
-    const dur = 380;
+    const start   = performance.now();
+    const dur     = 380;
 
     const tick = (now: number) => {
       this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
       let allDone = true;
 
-      rings.forEach((ring) => {
+      rings.forEach(ring => {
         const t = Math.max(0, (now - start - ring.delay) / dur);
         if (t < 1) allDone = false;
         const ease = 1 - Math.pow(1 - Math.min(t, 1), 3);
-        const r = ring.maxR * ease;
+        const r     = ring.maxR * ease;
         const alpha = ring.alpha * (1 - ease);
 
         this.ctx.beginPath();
         this.ctx.arc(cx, cy, r, 0, Math.PI * 2);
         this.ctx.strokeStyle = ring.color;
         this.ctx.globalAlpha = alpha;
-        this.ctx.lineWidth = 2.5;
+        this.ctx.lineWidth   = 2.5;
         this.ctx.stroke();
       });
 
@@ -251,37 +284,43 @@ export class AiChatComponent implements OnInit, OnDestroy, AfterViewInit {
     this.spiralRaf = requestAnimationFrame(tick);
   }
 
-  private playSpiral(x1: number, y1: number, x2: number, y2: number, onDone: () => void): void {
-    const dur = 700;
-    const start = performance.now();
-    const turns = 2.5;
+  private playSpiral(
+    x1: number, y1: number,
+    x2: number, y2: number,
+    onDone: () => void,
+  ): void {
+    const dur       = 700;
+    const start     = performance.now();
+    const turns     = 2.5;
     const maxRadius = 80;
 
     const totalPoints = 200;
     const spiralPts: { x: number; y: number }[] = [];
 
     for (let i = 0; i <= totalPoints; i++) {
-      const pct = i / totalPoints;
+      const pct   = i / totalPoints;
       const angle = pct * Math.PI * 2 * turns - Math.PI / 2;
-      const rad = maxRadius * Math.sin(pct * Math.PI);
-      const lx = x1 + (x2 - x1) * pct + Math.cos(angle) * rad;
-      const ly = y1 + (y2 - y1) * pct + Math.sin(angle) * rad;
+      const rad   = maxRadius * Math.sin(pct * Math.PI);
+      const lx    = x1 + (x2 - x1) * pct + Math.cos(angle) * rad;
+      const ly    = y1 + (y2 - y1) * pct + Math.sin(angle) * rad;
       spiralPts.push({ x: lx, y: ly });
     }
 
     const tick = (now: number) => {
       this.clearCanvas();
-      const rawT = (now - start) / dur;
-      const t = Math.min(rawT, 1);
-      const ease = t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
+      const rawT  = (now - start) / dur;
+      const t     = Math.min(rawT, 1);
+      const ease  = t < 0.5
+        ? 4 * t * t * t
+        : 1 - Math.pow(-2 * t + 2, 3) / 2;
 
-      const head = Math.floor(ease * totalPoints);
-      const tail = Math.max(0, head - 40);
+      const head  = Math.floor(ease * totalPoints);
+      const tail  = Math.max(0, head - 40);
 
       for (let i = tail; i < head; i++) {
-        const segT = (i - tail) / (head - tail);
-        const p = spiralPts[i];
-        const np = spiralPts[i + 1] || p;
+        const segT  = (i - tail) / (head - tail);
+        const p     = spiralPts[i];
+        const np    = spiralPts[i + 1] || p;
         const alpha = segT * 0.9;
         const width = 1 + segT * 3;
 
@@ -293,30 +332,30 @@ export class AiChatComponent implements OnInit, OnDestroy, AfterViewInit {
         grad.addColorStop(0, `rgba(14,165,233,${alpha * 0.5})`);
         grad.addColorStop(1, `rgba(139,92,246,${alpha})`);
 
-        this.ctx.strokeStyle = grad;
-        this.ctx.lineWidth = width;
-        this.ctx.globalAlpha = 1;
-        this.ctx.lineCap = 'round';
+        this.ctx.strokeStyle  = grad;
+        this.ctx.lineWidth    = width;
+        this.ctx.globalAlpha  = 1;
+        this.ctx.lineCap      = 'round';
         this.ctx.stroke();
       }
 
       if (head < spiralPts.length) {
         const hp = spiralPts[head];
         const glow = this.ctx.createRadialGradient(hp.x, hp.y, 0, hp.x, hp.y, 14);
-        glow.addColorStop(0, 'rgba(255,255,255,0.95)');
+        glow.addColorStop(0,   'rgba(255,255,255,0.95)');
         glow.addColorStop(0.3, 'rgba(14,165,233,0.8)');
         glow.addColorStop(0.7, 'rgba(139,92,246,0.4)');
-        glow.addColorStop(1, 'rgba(139,92,246,0)');
+        glow.addColorStop(1,   'rgba(139,92,246,0)');
 
         this.ctx.beginPath();
         this.ctx.arc(hp.x, hp.y, 14, 0, Math.PI * 2);
-        this.ctx.fillStyle = glow;
+        this.ctx.fillStyle  = glow;
         this.ctx.globalAlpha = 1;
         this.ctx.fill();
 
         this.ctx.beginPath();
         this.ctx.arc(hp.x, hp.y, 4, 0, Math.PI * 2);
-        this.ctx.fillStyle = '#ffffff';
+        this.ctx.fillStyle  = '#ffffff';
         this.ctx.globalAlpha = 1;
         this.ctx.fill();
       }
@@ -334,19 +373,19 @@ export class AiChatComponent implements OnInit, OnDestroy, AfterViewInit {
   }
 
   private playDestinationBurst(cx: number, cy: number, onDone: () => void): void {
-    const dur = 280;
+    const dur   = 280;
     const start = performance.now();
-    const rays = 8;
+    const rays   = 8;
 
     const tick = (now: number) => {
       this.clearCanvas();
-      const t = Math.min((now - start) / dur, 1);
+      const t    = Math.min((now - start) / dur, 1);
       const ease = 1 - Math.pow(1 - t, 2);
 
       const glow = this.ctx.createRadialGradient(cx, cy, 0, cx, cy, 60 * ease);
-      glow.addColorStop(0, `rgba(14,165,233,${0.6 * (1 - t)})`);
+      glow.addColorStop(0,   `rgba(14,165,233,${0.6 * (1 - t)})`);
       glow.addColorStop(0.5, `rgba(139,92,246,${0.3 * (1 - t)})`);
-      glow.addColorStop(1, 'rgba(139,92,246,0)');
+      glow.addColorStop(1,   'rgba(139,92,246,0)');
       this.ctx.beginPath();
       this.ctx.arc(cx, cy, 60 * ease, 0, Math.PI * 2);
       this.ctx.fillStyle = glow;
@@ -354,13 +393,13 @@ export class AiChatComponent implements OnInit, OnDestroy, AfterViewInit {
 
       for (let r = 0; r < rays; r++) {
         const angle = (r / rays) * Math.PI * 2;
-        const len = 40 * ease;
+        const len   = 40 * ease;
         this.ctx.beginPath();
         this.ctx.moveTo(cx, cy);
         this.ctx.lineTo(cx + Math.cos(angle) * len, cy + Math.sin(angle) * len);
         this.ctx.strokeStyle = r % 2 === 0 ? '#0EA5E9' : '#8B5CF6';
         this.ctx.globalAlpha = (1 - ease) * 0.8;
-        this.ctx.lineWidth = 2;
+        this.ctx.lineWidth   = 2;
         this.ctx.stroke();
       }
 
@@ -387,15 +426,15 @@ export class AiChatComponent implements OnInit, OnDestroy, AfterViewInit {
     const widgetEl = this.chatWidgetEl?.nativeElement;
     if (!widgetEl) return;
 
-    const vw = window.innerWidth;
-    const vh = window.innerHeight;
-    const cx = screenCX ?? vw / 2;
-    const cy = screenCY ?? vh / 2;
-    const ww = Math.min(400, vw - 24);
-    const wh = 620;
+    const vw  = window.innerWidth;
+    const vh  = window.innerHeight;
+    const cx  = screenCX ?? vw / 2;
+    const cy  = screenCY ?? vh / 2;
+    const ww  = Math.min(400, vw - 24);
+    const wh  = 620;
 
     widgetEl.style.left = `${cx - ww / 2}px`;
-    widgetEl.style.top = `${Math.max(12, cy - wh / 2)}px`;
+    widgetEl.style.top  = `${Math.max(12, cy - wh / 2)}px`;
 
     widgetEl.style.setProperty('--dx', '0px');
     widgetEl.style.setProperty('--dy', '0px');
@@ -408,8 +447,8 @@ export class AiChatComponent implements OnInit, OnDestroy, AfterViewInit {
     if (!text || this.isTyping) return;
 
     this.addUserMessage(text);
-    this.inputText = '';
-    this.quickReplies = [];
+    this.inputText       = '';
+    this.quickReplies    = [];
     this.showSuggestions = false;
 
     if (!this.authState.isLoggedIn()) {
@@ -519,19 +558,9 @@ export class AiChatComponent implements OnInit, OnDestroy, AfterViewInit {
       if (item.kind === 'text') {
         this.messages.push({ role: 'ai', kind: 'text', text: item.text, time: this.getTime() });
       } else if (item.kind === 'pharmacies') {
-        this.messages.push({
-          role: 'ai',
-          kind: 'pharmacies',
-          pharmacies: item.pharmacies,
-          time: this.getTime(),
-        });
+        this.messages.push({ role: 'ai', kind: 'pharmacies', pharmacies: item.pharmacies, time: this.getTime() });
       } else if (item.kind === 'pharmacies-unavailable') {
-        this.messages.push({
-          role: 'ai',
-          kind: 'pharmacies-unavailable',
-          unavailableReason: item.reason,
-          time: this.getTime(),
-        });
+        this.messages.push({ role: 'ai', kind: 'pharmacies-unavailable', unavailableReason: item.reason, time: this.getTime() });
       } else {
         this.messages.push({ role: 'ai', kind: item.kind, card: item.card, time: this.getTime() });
       }

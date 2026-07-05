@@ -4,7 +4,6 @@ import {
   Input,
   EventEmitter,
   OnInit,
-  OnDestroy,
   AfterViewInit,
   ElementRef,
   ViewChild,
@@ -22,6 +21,8 @@ import { SearchService } from '../../../core/services/search.service';
 import { FavoriteService } from '../../../core/services/favorite.service';
 import { FavoriteStateService } from '../../../core/services/favorite-state.service';
 import { AuthStateService } from '../../../core/services/auth-state';
+import { AiChatBridgeService } from '../../../core/services/ai-chat-bridge.service';
+import { SearchOverlayStateService } from '../../../core/services/search-overlay-state.service';
 
 type SearchStatus = 'idle' | 'typing' | 'loading' | 'done';
 
@@ -33,11 +34,13 @@ type SearchStatus = 'idle' | 'typing' | 'loading' | 'done';
   styleUrl: './search-overlay.component.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class SearchOverlayComponent implements OnInit, AfterViewInit, OnDestroy {
+export class SearchOverlayComponent implements OnInit, AfterViewInit {
   private searchService = inject(SearchService);
   private favoriteService = inject(FavoriteService);
   private favoriteState = inject(FavoriteStateService);
   private authState = inject(AuthStateService);
+  private aiChatBridge = inject(AiChatBridgeService);
+  private overlayState = inject(SearchOverlayStateService);
   private router = inject(Router);
   private cdr = inject(ChangeDetectorRef);
 
@@ -99,6 +102,7 @@ export class SearchOverlayComponent implements OnInit, AfterViewInit, OnDestroy 
     });
 
     this.loadRecentSearches();
+    this.restoreState();
     this.listenSearch();
 
     document.addEventListener('keydown', this.keydownHandler);
@@ -115,14 +119,27 @@ export class SearchOverlayComponent implements OnInit, AfterViewInit, OnDestroy 
     if (this.doneTimer) clearTimeout(this.doneTimer);
   }
 
+  /** Restores the last search (query + results) from the shared state service */
+  private restoreState(): void {
+    const state = this.overlayState;
+    if (!state.query) return;
+
+    this.searchControl.setValue(state.query, { emitEvent: false });
+    this.drugs = state.drugs;
+    this.total = state.total;
+    this.hasMore = state.hasMore;
+    this.page = state.page;
+    this.searchStatus = 'idle';
+  }
+
   private listenSearch(): void {
     this.searchControl.valueChanges
       .pipe(
         tap((value) => {
           const query = (value ?? '').trim();
 
-          // Hide any stale "too short" hint the moment the user resumes typing
           this.showTooShortHint = false;
+          this.overlayState.updateQuery(query);
 
           if (query.length >= this.MIN_QUERY_LENGTH) {
             this.searchStatus = 'typing';
@@ -131,6 +148,7 @@ export class SearchOverlayComponent implements OnInit, AfterViewInit, OnDestroy 
             this.drugs = [];
             this.total = 0;
             this.hasMore = false;
+            this.overlayState.clear();
           }
           this.cdr.markForCheck();
         }),
@@ -168,6 +186,7 @@ export class SearchOverlayComponent implements OnInit, AfterViewInit, OnDestroy 
         this.total = res.total;
         this.hasMore = res.hasMore;
         this.saveSearch(query);
+        this.overlayState.save(query, this.drugs, this.total, this.hasMore, this.page);
         this.showDone();
       },
       error: () => {
@@ -198,10 +217,13 @@ export class SearchOverlayComponent implements OnInit, AfterViewInit, OnDestroy 
     this.searchStatus = 'loading';
     this.cdr.markForCheck();
 
-    this.searchService.search(this.searchControl.value ?? '', this.page, this.limit).subscribe({
+    const query = this.searchControl.value ?? '';
+
+    this.searchService.search(query, this.page, this.limit).subscribe({
       next: (res) => {
         this.drugs = [...this.drugs, ...res.data];
         this.hasMore = res.hasMore;
+        this.overlayState.save(query, this.drugs, this.total, this.hasMore, this.page);
         this.showDone();
       },
     });
@@ -255,15 +277,13 @@ export class SearchOverlayComponent implements OnInit, AfterViewInit, OnDestroy 
     });
   }
 
-  /**
-   * TODO: نربط الزرار ده بالـ AI model بعدين.
-   * دلوقتي بس بنجهز الـ query الحالي عشان نبعته للموديل لما يبقى جاهز.
-   */
+  /** Closes the search overlay and opens the AI chat widget with this query pre-filled */
   askAI(): void {
     const query = this.searchControl.value?.trim();
     if (!query) return;
 
-    console.log('Ask AI about:', query);
+    this.aiChatBridge.askAbout(query);
+    this.close();
   }
 
   goToRegister(): void {
@@ -343,25 +363,30 @@ export class SearchOverlayComponent implements OnInit, AfterViewInit, OnDestroy 
     }
   }
 
+  /**
+   * Clicking outside the search box (the empty backdrop area) closes the overlay,
+   * but only when there are no results on screen — if results are showing, the
+   * user is likely trying to scroll through them, so we ignore the click instead
+   * of closing accidentally under them.
+   */
   onBackdropClick(event: MouseEvent): void {
     const target = event.target as HTMLElement;
-    if (target.classList.contains('search-overlay__backdrop')) {
-      this.close();
-    }
-  }
+    if (!target.classList.contains('search-overlay__backdrop')) return;
 
-  onSearchButton(): void {
-    if (!this.isLoggedIn) return;
+    if (this.drugs.length > 0) return;
 
-    const query = this.searchControl.value?.trim();
-    if (!query) return;
-
-    this.router.navigate(['/search'], { queryParams: { q: query } });
     this.close();
   }
 
+  /** Enter forces an immediate search of the current query, skipping the debounce wait */
   onEnter(): void {
-    this.onSearchButton();
+    if (!this.isLoggedIn) return;
+
+    const query = this.searchControl.value?.trim();
+    if (!query || query.length < this.MIN_QUERY_LENGTH) return;
+
+    this.page = 1;
+    this.search(query);
   }
 
   trackDrug(index: number, drug: Drug) {

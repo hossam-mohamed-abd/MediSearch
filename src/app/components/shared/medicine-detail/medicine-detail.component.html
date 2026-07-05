@@ -1,0 +1,324 @@
+<div class="detail-page">
+
+    <!-- Loading skeleton -->
+    @if (loading()) {
+    <div class="detail-skeleton">
+        <div class="container">
+            <div class="skeleton-breadcrumb"></div>
+            <div class="skeleton-hero">
+                <div class="skeleton-img"></div>
+                <div class="skeleton-info">
+                    <div class="skeleton-line skeleton-line--sm"></div>
+                    <div class="skeleton-line skeleton-line--lg"></div>
+                    <div class="skeleton-line skeleton-line--md"></div>
+                    <div class="skeleton-line skeleton-line--sm"></div>
+                    <div class="skeleton-line skeleton-line--md"></div>
+                    <div class="skeleton-actions">
+                        <div class="skeleton-btn"></div>
+                        <div class="skeleton-btn"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    }
+
+    @if (!loading() && drug()) {
+    <!-- Breadcrumb -->
+    <div class="detail-breadcrumb">
+        <div class="container">
+            <nav class="breadcrumb">
+                <a routerLink="/" class="breadcrumb-link">
+                    <i class="fa-solid fa-house"></i>
+                    Home
+                </a>
+                <i class="fa-solid fa-chevron-right breadcrumb-sep"></i>
+                <a routerLink="/medicines" class="breadcrumb-link">Medicines</a>
+                <i class="fa-solid fa-chevron-right breadcrumb-sep"></i>
+                <span class="breadcrumb-current">{{ drug()!.name }}</span>
+            </nav>
+        </div>
+    </div>
+
+    <!-- Hero section -->
+    <div class="detail-hero">
+        <div class="container">
+            <div class="hero-grid">
+
+                <!-- Image side -->
+                <div class="hero-image-col">
+                    <div class="hero-image-wrap">
+                        @if (!imageError()) {
+                        <img [src]="displayImage" [alt]="drug()!.name" class="hero-image" (error)="onImageError()" />
+                        } @else {
+                        <div class="hero-image-fallback">
+                            <i class="fa-solid fa-pills"></i>
+                        </div>
+                        }
+
+                        <!-- Availability badge -->
+                        <div class="hero-availability" [class.hero-availability--out]="availableCount() === 0">
+                            @if (availableCount() > 0) {
+                            <i class="fa-solid fa-circle-check"></i>
+                            Available in {{ availableCount() }}
+                            {{ availableCount() === 1 ? 'pharmacy' : 'pharmacies' }}
+                            } @else {
+                            <i class="fa-solid fa-circle-xmark"></i>
+                            Out of Stock
+                            }
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Info side -->
+                <div class="hero-info-col">
+
+                    <!-- Category & form -->
+                    <div class="hero-badges">
+                        @if (drug()!.categoryName) {
+                        <span class="badge badge--category">
+                            <i class="fa-solid fa-layer-group"></i>
+                            {{ drug()!.categoryName }}
+                        </span>
+                        }
+                        @if (drug()!.dosageForm) {
+                        <span class="badge badge--form">
+                            <i class="fa-solid fa-capsules"></i>
+                            {{ drug()!.dosageForm }}
+                        </span>
+                        }
+                        @if (drug()!.strength) {
+                        <span class="badge badge--strength">
+                            <i class="fa-solid fa-flask"></i>
+                            {{ drug()!.strength }}
+                        </span>
+                        }
+                    </div>
+
+                    <!-- Name -->
+                    <h1 class="hero-name">{{ drug()!.name }}</h1>
+
+                    <!-- Substance & manufacturer -->
+                    <div class="hero-meta-row">
+                        @if (drug()!.activeSubstance) {
+                        <div class="hero-meta-item">
+                            <span class="hero-meta-label">Active Substance</span>
+                            <span class="hero-meta-value">{{ drug()!.activeSubstance }}</span>
+                        </div>
+                        }
+                        @if (drug()!.manufacturer) {
+                        <div class="hero-meta-item">
+                            <span class="hero-meta-label">Manufacturer</span>
+                            <span class="hero-meta-value">{{ drug()!.manufacturer }}</span>
+                        </div>
+                        }
+                    </div>
+
+                    <!-- Price -->
+                    @if (minPrice() !== null) {
+                    <div class="hero-price-block">
+                        <span class="hero-price-label">Starting from</span>
+                        <span class="hero-price-value">
+                            EGP {{ minPrice() | number:'1.0-2' }}
+                        </span>
+                    </div>
+                    }
+
+                    <!-- Actions -->
+                    <div class="hero-actions">
+                        <button class="action-btn action-btn--ai" (click)="onAskAi()">
+                            <i class="fa-solid fa-robot"></i>
+                            Ask AI about this medicine
+                        </button>
+
+                        <button class="action-btn action-btn--fav" [class.action-btn--fav-active]="isFavorite()"
+                            (click)="onToggleFavorite($event)">
+                            @if (isFavorite()) {
+                            <i class="fa-solid fa-heart"></i>
+                            } @else {
+                            <i class="fa-regular fa-heart"></i>
+                            }
+                        </button>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Tabs + content -->
+    <div class="detail-body">
+        <div class="container">
+
+            <div class="detail-tabs">
+                <button class="tab-btn" [class.tab-btn--active]="activeTab() === 'pharmacies'"
+                    (click)="setTab('pharmacies')">
+                    <i class="fa-solid fa-store"></i>
+                    Pharmacies
+                    @if (pharmacies().length > 0) {
+                    <span class="tab-count">{{ pharmacies().length }}</span>
+                    }
+                </button>
+                <button class="tab-btn" [class.tab-btn--active]="activeTab() === 'info'" (click)="setTab('info')">
+                    <i class="fa-solid fa-circle-info"></i>
+                    Drug Info
+                </button>
+            </div>
+
+            <!-- Pharmacies tab -->
+            @if (activeTab() === 'pharmacies') {
+            <div class="pharmacies-section">
+                @if (pharmacies().length === 0) {
+                <div class="empty-state">
+                    <div class="empty-icon">
+                        <i class="fa-solid fa-store-slash"></i>
+                    </div>
+                    <h3>Not available in any pharmacy</h3>
+                    <p>This medicine is currently out of stock in all connected pharmacies.</p>
+                </div>
+                } @else {
+                <div class="pharmacy-list">
+                    @for (pharmacy of pharmacies(); track pharmacy.pharmacyId) {
+                    <div class="pharmacy-row">
+
+                        <div class="pharmacy-row-left">
+                            <div class="pharmacy-avatar">
+                                {{ pharmacy.name.charAt(0) }}
+                            </div>
+                            <div class="pharmacy-row-info">
+                                <h4 class="pharmacy-row-name">{{ pharmacy.name }}</h4>
+                                <div class="pharmacy-row-meta">
+                                    @if (pharmacy.cityName) {
+                                    <span>
+                                        <i class="fa-solid fa-location-dot"></i>
+                                        {{ pharmacy.cityName }}
+                                        @if (pharmacy.governorateName) {
+                                        , {{ pharmacy.governorateName }}
+                                        }
+                                    </span>
+                                    }
+                                    @if (pharmacy.rating) {
+                                    <span>
+                                        <i class="fa-solid fa-star"></i>
+                                        {{ pharmacy.rating | number:'1.1-1' }}
+                                        ({{ pharmacy.ratingCount }})
+                                    </span>
+                                    }
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="pharmacy-row-right">
+                            <span class="proximity-badge {{ getTierClass(pharmacy.proximityTier) }}">
+                                {{ getTierLabel(pharmacy.proximityTier) }}
+                            </span>
+                            <div class="pharmacy-row-price">
+                                @if (pharmacy.price !== null) {
+                                <span class="price-val">EGP {{ pharmacy.price | number:'1.0-2' }}</span>
+                                } @else {
+                                <span class="price-na">Price N/A</span>
+                                }
+                                @if (pharmacy.quantity !== null) {
+                                <span class="qty-badge">
+                                    {{ pharmacy.quantity }} left
+                                </span>
+                                }
+                            </div>
+                        </div>
+
+                    </div>
+                    }
+                </div>
+                }
+            </div>
+            }
+
+            <!-- Info tab -->
+            @if (activeTab() === 'info') {
+            <div class="info-section">
+                <div class="info-grid">
+
+                    <div class="info-card">
+                        <div class="info-card-icon">
+                            <i class="fa-solid fa-flask"></i>
+                        </div>
+                        <div>
+                            <h4 class="info-card-label">Active Substance</h4>
+                            <p class="info-card-value">
+                                {{ drug()!.activeSubstance || 'Not specified' }}
+                            </p>
+                        </div>
+                    </div>
+
+                    <div class="info-card">
+                        <div class="info-card-icon">
+                            <i class="fa-solid fa-capsules"></i>
+                        </div>
+                        <div>
+                            <h4 class="info-card-label">Dosage Form</h4>
+                            <p class="info-card-value">
+                                {{ drug()!.dosageForm || 'Not specified' }}
+                            </p>
+                        </div>
+                    </div>
+
+                    <div class="info-card">
+                        <div class="info-card-icon">
+                            <i class="fa-solid fa-weight-scale"></i>
+                        </div>
+                        <div>
+                            <h4 class="info-card-label">Strength</h4>
+                            <p class="info-card-value">
+                                {{ drug()!.strength || 'Not specified' }}
+                            </p>
+                        </div>
+                    </div>
+
+                    <div class="info-card">
+                        <div class="info-card-icon">
+                            <i class="fa-solid fa-industry"></i>
+                        </div>
+                        <div>
+                            <h4 class="info-card-label">Manufacturer</h4>
+                            <p class="info-card-value">
+                                {{ drug()!.manufacturer || 'Not specified' }}
+                            </p>
+                        </div>
+                    </div>
+
+                </div>
+
+                @if (drug()!.description) {
+                <div class="info-description">
+                    <h4 class="info-desc-title">
+                        <i class="fa-solid fa-file-lines"></i>
+                        Description
+                    </h4>
+                    <p class="info-desc-text">{{ drug()!.description }}</p>
+                </div>
+                }
+
+                <div class="info-ai-cta">
+                    <div class="info-ai-cta-text">
+                        <i class="fa-solid fa-robot"></i>
+                        <div>
+                            <h4>Want to know more?</h4>
+                            <p>Ask our AI about dosage, interactions, and safe alternatives.</p>
+                        </div>
+                    </div>
+                    <button class="action-btn action-btn--ai" (click)="onAskAi()">
+                        Ask AI
+                        <i class="fa-solid fa-arrow-right"></i>
+                    </button>
+                </div>
+
+            </div>
+            }
+
+        </div>
+    </div>
+    }
+
+</div>
+
+<app-ai-chat></app-ai-chat>

@@ -2,6 +2,7 @@ import { Component, Input, Output, EventEmitter, inject } from '@angular/core';
 import { Router } from '@angular/router';
 import { AuthStateService } from '../../../core/services/auth-state';
 import { FavoriteFlyService } from '../../../core/services/favorite-fly.service';
+import { AiChatBridgeService } from '../../../core/services/ai-chat-bridge.service';
 
 export interface Drug {
   id: number;
@@ -31,17 +32,16 @@ const DEFAULT_DRUG_IMAGE =
   styleUrl: './drug-card.component.css',
 })
 export class DrugCardComponent {
-
   @Input() drug!: Drug;
   @Output() favoriteToggled = new EventEmitter<Drug>();
-  @Output() cardClicked     = new EventEmitter<Drug>();
+  @Output() cardClicked = new EventEmitter<Drug>();
 
   imageError = false;
 
+  private router = inject(Router);
   private authState = inject(AuthStateService);
   private favoriteFlyService = inject(FavoriteFlyService);
-
-  constructor(private router: Router) {}
+  private aiChatBridge = inject(AiChatBridgeService);
 
   get displayImage(): string {
     return this.drug.image_url || DEFAULT_DRUG_IMAGE;
@@ -56,9 +56,6 @@ export class DrugCardComponent {
 
     const willBeFavorite = !this.drug.is_favorite;
 
-    // Only play the animation when the user is actually logged in and
-    // the drug is about to be added (not removed) — otherwise the
-    // auth modal will show instead and there's nothing to celebrate.
     if (willBeFavorite && this.authState.isLoggedIn()) {
       const btn = event.currentTarget as HTMLElement;
       this.triggerLocalPop(btn);
@@ -74,12 +71,12 @@ export class DrugCardComponent {
   }
 
   onCardClick(): void {
-    this.cardClicked.emit(this.drug);
+    this.router.navigate(['/drugs', this.drug.id]);
   }
 
   onAiClick(event: MouseEvent): void {
     event.stopPropagation();
-    const query = `Tell me about ${this.drug.name} (${this.drug.active_substance}) — uses, dosage, side effects, and alternatives.`;
-    this.router.navigate(['/ai-assistant'], { queryParams: { q: query } });
+    const query = `احكيلي عن ${this.drug.name} (${this.drug.active_substance}) — الاستخدامات، الجرعة، الأضرار، والبدائل المتاحة.`;
+    this.aiChatBridge.askAbout(query);
   }
 }
