@@ -60,16 +60,16 @@
             </span>
           </div>
 
-          <div class="pharmacy-stats">
-            <div class="pstat">
-              <i class="fa-solid fa-pills"></i>
-              <span>{{ pharmacy.medicines_count }} Medicines</span>
-            </div>
-            <div class="pstat">
-              <i class="fa-solid fa-users"></i>
-              <span>{{ pharmacy.reviews_count }} Reviews</span>
-            </div>
-          </div>
+<div class="pharmacy-stats">
+  <div class="pstat">
+    <i class="fa-solid fa-pills"></i>
+    <span>{{ pharmacy.medicines_count }} Medicines</span>
+  </div>
+  <div class="pstat">
+    <i class="fa-solid fa-eye"></i>
+    <span>{{ pharmacy.views_count }} Views</span>
+  </div>
+</div>
 
           <button class="card-btn" [routerLink]="[
                   '/pharmacies',
