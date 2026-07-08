@@ -11,6 +11,9 @@ export class SearchService {
   search(query: string, page = 1, limit = 6) {
     let params = new HttpParams().set('q', query).set('page', page).set('limit', limit);
 
-    return this.http.get<any>(`${environment.apiUrl}/search`, { params });
+    return this.http.get<any>(`${environment.apiUrl}/search`, {
+      params,
+      withCredentials: true,
+    });
   }
 }

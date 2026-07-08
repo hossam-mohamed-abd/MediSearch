@@ -15,7 +15,9 @@ export class PharmacyService {
   }
 
   getPharmacy(id: number) {
-    return this.http.get<any>(`${this.api}/${id}`);
+    return this.http.get<any>(`${this.api}/${id}`, {
+      withCredentials: true,
+    });
   }
 
   getMedicines(

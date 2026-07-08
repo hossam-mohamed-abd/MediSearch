@@ -5,12 +5,11 @@ import { debounceTime, distinctUntilChanged, tap, forkJoin } from 'rxjs';
 
 import { DrugCardComponent } from '../shared/drug-card/drug-card.component';
 import { PharmacyService } from '../../core/services/pharmacy.service';
-import { AiChatComponent } from "../ai-assistan/ai-assistan.component";
 
 @Component({
   selector: 'app-pharmacy-details',
   standalone: true,
-  imports: [ReactiveFormsModule, DrugCardComponent, AiChatComponent],
+  imports: [ReactiveFormsModule, DrugCardComponent],
   templateUrl: './pharmacy-details.component.html',
   styleUrl: './pharmacy-details.component.css',
 })
