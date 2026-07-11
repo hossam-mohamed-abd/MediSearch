@@ -1,0 +1,103 @@
+<div class="profile-card">
+
+    @if(loading()){
+
+        <div class="loading">
+
+            Loading...
+
+        </div>
+
+    }
+
+    @else if(profile()){
+
+        <div class="logo">
+
+            @if(profile().logo_url){
+
+                <img
+                    [src]="profile().logo_url"
+                >
+
+            }
+
+            @else{
+
+                <div class="placeholder">
+
+                    {{profile().name.charAt(0)}}
+
+                </div>
+
+            }
+
+        </div>
+
+        <h2>
+
+            {{profile().name}}
+
+        </h2>
+
+        <p>
+
+            {{profile().city?.name}}
+
+        </p>
+
+        <hr>
+
+        <div class="row">
+
+            <span>Email</span>
+
+            <strong>
+
+                {{profile().email}}
+
+            </strong>
+
+        </div>
+
+        <div class="row">
+
+            <span>Phone</span>
+
+            <strong>
+
+                {{profile().phone}}
+
+            </strong>
+
+        </div>
+
+        <div class="row">
+
+            <span>Employee</span>
+
+            <strong>
+
+                {{profile().employee.first_name}}
+
+                {{profile().employee.last_name}}
+
+            </strong>
+
+        </div>
+
+        <div class="row">
+
+            <span>Role</span>
+
+            <strong>
+
+                {{profile().staffRole}}
+
+            </strong>
+
+        </div>
+
+    }
+
+</div>

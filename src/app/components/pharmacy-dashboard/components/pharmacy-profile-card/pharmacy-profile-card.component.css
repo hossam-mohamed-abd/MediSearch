@@ -1,0 +1,116 @@
+:host {
+    --card-bg: #ffffff;
+    --border: #e2e8f0;
+    --text-primary: #0f172a;
+    --text-secondary: #64748b;
+    --primary: #0ea5e9;
+    --accent: #10b981;
+    --shadow-sm: 0 1px 3px rgba(15,23,42,.06);
+    --shadow-md: 0 12px 28px rgba(15,23,42,.1);
+    display: block;
+  }
+  
+  .profile-card {
+    background: var(--card-bg);
+    border: 1px solid var(--border);
+    border-radius: 18px;
+    padding: 28px;
+    text-align: center;
+    box-shadow: var(--shadow-sm);
+    transition: box-shadow .3s ease, transform .3s ease;
+    animation: fadeInUp .5s ease both;
+  }
+  
+  .profile-card:hover {
+    box-shadow: var(--shadow-md);
+    transform: translateY(-2px);
+  }
+  
+  .loading {
+    padding: 60px 0;
+    color: var(--text-secondary);
+    font-size: 14px;
+  }
+  
+  .logo {
+    display: flex;
+    justify-content: center;
+    margin-bottom: 16px;
+  }
+  
+  .logo img {
+    width: 84px;
+    height: 84px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 3px solid #fff;
+    box-shadow: 0 4px 14px rgba(15,23,42,.15);
+    animation: popIn .4s ease both;
+  }
+  
+  .placeholder {
+    width: 84px;
+    height: 84px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto;
+    font-size: 32px;
+    font-weight: 700;
+    color: #fff;
+    background: linear-gradient(135deg, var(--primary), var(--accent));
+    box-shadow: 0 4px 14px rgba(14,165,233,.3);
+    animation: popIn .4s ease both;
+  }
+  
+  .profile-card h2 {
+    margin: 0 0 4px;
+    font-size: 20px;
+    font-weight: 700;
+  }
+  
+  .profile-card > p {
+    margin: 0 0 18px;
+    font-size: 13px;
+    color: var(--text-secondary);
+  }
+  
+  .profile-card hr {
+    border: none;
+    border-top: 1px solid var(--border);
+    margin: 0 0 18px;
+  }
+  
+  .row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px 0;
+    border-bottom: 1px solid var(--border);
+    font-size: 14px;
+  }
+  
+  .row:last-child {
+    border-bottom: none;
+  }
+  
+  .row span {
+    color: var(--text-secondary);
+  }
+  
+  .row strong {
+    color: var(--text-primary);
+    font-weight: 600;
+    text-align: right;
+  }
+  
+  @keyframes fadeInUp {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  
+  @keyframes popIn {
+    from { opacity: 0; transform: scale(.7); }
+    to { opacity: 1; transform: scale(1); }
+  }

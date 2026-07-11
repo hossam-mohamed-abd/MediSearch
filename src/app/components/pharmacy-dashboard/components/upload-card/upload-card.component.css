@@ -1,0 +1,127 @@
+:host {
+    --card-bg: #ffffff;
+    --border: #e2e8f0;
+    --text-primary: #0f172a;
+    --text-secondary: #64748b;
+    --primary: #0ea5e9;
+    --primary-dark: #0284c7;
+    --success: #10b981;
+    --danger: #ef4444;
+    --shadow-sm: 0 1px 3px rgba(15,23,42,.06);
+    --shadow-md: 0 12px 28px rgba(15,23,42,.1);
+    display: block;
+  }
+  
+  .upload-card {
+    background: var(--card-bg);
+    border: 1px solid var(--border);
+    border-radius: 18px;
+    padding: 28px;
+    box-shadow: var(--shadow-sm);
+    transition: box-shadow .3s ease, transform .3s ease;
+    animation: fadeInUp .5s ease both;
+  }
+  
+  .upload-card:hover {
+    box-shadow: var(--shadow-md);
+    transform: translateY(-2px);
+  }
+  
+  .upload-card h2 {
+    margin: 0 0 6px;
+    font-size: 19px;
+    font-weight: 700;
+  }
+  
+  .upload-card > p {
+    margin: 0 0 20px;
+    font-size: 14px;
+    color: var(--text-secondary);
+  }
+  
+  .upload-card input[type="file"] {
+    width: 100%;
+    padding: 14px;
+    border: 2px dashed var(--border);
+    border-radius: 12px;
+    font-size: 13px;
+    color: var(--text-secondary);
+    background: #f8fafc;
+    cursor: pointer;
+    transition: border-color .25s ease, background .25s ease;
+  }
+  
+  .upload-card input[type="file"]:hover {
+    border-color: var(--primary);
+    background: rgba(14,165,233,.04);
+  }
+  
+  .filename {
+    margin-top: 12px;
+    padding: 10px 14px;
+    border-radius: 10px;
+    background: rgba(14,165,233,.08);
+    color: var(--primary-dark);
+    font-size: 13px;
+    font-weight: 600;
+    animation: fadeInUp .3s ease both;
+  }
+  
+  .upload-card button {
+    margin-top: 18px;
+    width: 100%;
+    padding: 13px;
+    border: none;
+    border-radius: 12px;
+    background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+    color: #fff;
+    font-size: 14px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: transform .2s ease, box-shadow .2s ease, opacity .2s ease;
+    box-shadow: 0 6px 16px rgba(14,165,233,.25);
+  }
+  
+  .upload-card button:hover:not(:disabled) {
+    transform: translateY(-2px);
+    box-shadow: 0 10px 22px rgba(14,165,233,.32);
+  }
+  
+  .upload-card button:disabled {
+    opacity: .55;
+    cursor: not-allowed;
+    box-shadow: none;
+  }
+  
+  .success {
+    margin-top: 14px;
+    padding: 10px 14px;
+    border-radius: 10px;
+    background: rgba(16,185,129,.1);
+    color: var(--success);
+    font-size: 13px;
+    font-weight: 600;
+    animation: fadeInUp .3s ease both;
+  }
+  
+  .error {
+    margin-top: 14px;
+    padding: 10px 14px;
+    border-radius: 10px;
+    background: rgba(239,68,68,.1);
+    color: var(--danger);
+    font-size: 13px;
+    font-weight: 600;
+    animation: shake .4s ease both;
+  }
+  
+  @keyframes fadeInUp {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  
+  @keyframes shake {
+    0%, 100% { transform: translateX(0); }
+    25% { transform: translateX(-4px); }
+    75% { transform: translateX(4px); }
+  }

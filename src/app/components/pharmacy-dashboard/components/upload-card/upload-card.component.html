@@ -1,0 +1,77 @@
+<div class="upload-card">
+
+    <h2>
+
+        Upload Inventory
+
+    </h2>
+
+    <p>
+
+        Upload your pharmacy inventory CSV.
+
+    </p>
+
+    <input
+
+        type="file"
+
+        accept=".csv"
+
+        (change)="onFileSelected($event)"
+
+    >
+
+    @if(selectedFile()){
+
+        <div class="filename">
+
+            {{selectedFile()?.name}}
+
+        </div>
+
+    }
+
+    <button
+
+        (click)="upload()"
+
+        [disabled]="uploading() || !selectedFile()"
+
+    >
+
+        @if(uploading()){
+
+            Uploading...
+
+        }
+
+        @else{
+
+            Upload
+
+        }
+
+    </button>
+
+    @if(successMessage()){
+
+        <p class="success">
+
+            {{successMessage()}}
+
+        </p>
+
+    }
+
+    @if(errorMessage()){
+
+        <p class="error">
+
+            {{errorMessage()}}
+
+        </p>
+
+    }
+
+</div>

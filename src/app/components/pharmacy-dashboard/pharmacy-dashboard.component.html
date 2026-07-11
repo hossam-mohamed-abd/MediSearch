@@ -1,0 +1,82 @@
+<div class="dashboard-page">
+
+  @if(loading()){
+  <div class="dashboard-loading">
+    <div class="loading-spinner"></div>
+    <p>Loading dashboard...</p>
+  </div>
+  }
+  @else {
+
+  <header class="dashboard-header">
+    <div class="header-info">
+      <h1>{{dashboard()?.pharmacy?.name}}</h1>
+      <span class="role-badge">{{dashboard()?.staffRole}}</span>
+    </div>
+    <button class="logout-btn" (click)="logout()">
+      <i class="fa-solid fa-arrow-right-from-bracket"></i>
+      Logout
+    </button>
+  </header>
+
+  <div class="stats-grid">
+    <div class="stat-card">
+      <div class="stat-icon stat-icon--total"><i class="fa-solid fa-boxes-stacked"></i></div>
+      <div class="stat-info">
+        <span class="stat-label">Inventory</span>
+        <span class="stat-value">{{dashboard()?.statistics?.inventoryCount}}</span>
+      </div>
+    </div>
+
+    <div class="stat-card">
+      <div class="stat-icon stat-icon--available"><i class="fa-solid fa-circle-check"></i></div>
+      <div class="stat-info">
+        <span class="stat-label">Available</span>
+        <span class="stat-value">{{dashboard()?.statistics?.available}}</span>
+      </div>
+    </div>
+
+    <div class="stat-card">
+      <div class="stat-icon stat-icon--low"><i class="fa-solid fa-triangle-exclamation"></i></div>
+      <div class="stat-info">
+        <span class="stat-label">Low Stock</span>
+        <span class="stat-value">{{dashboard()?.statistics?.lowStock}}</span>
+      </div>
+    </div>
+
+    <div class="stat-card">
+      <div class="stat-icon stat-icon--out"><i class="fa-solid fa-circle-xmark"></i></div>
+      <div class="stat-info">
+        <span class="stat-label">Out Of Stock</span>
+        <span class="stat-value">{{dashboard()?.statistics?.outOfStock}}</span>
+      </div>
+    </div>
+  </div>
+
+  }
+
+  <div class="dashboard-grid">
+    <app-upload-card></app-upload-card>
+    <app-pharmacy-profile-card></app-pharmacy-profile-card>
+  </div>
+
+
+  <a href="#" target="_blank" rel="noopener noreferrer" class="analysis-cta">
+
+
+    <div class="analysis-cta-content">
+      <div class="analysis-cta-icon">
+        <i class="fa-solid fa-chart-line"></i>
+      </div>
+      <div class="analysis-cta-text">
+        <h3>View Full Analysis For Your Pharmacy</h3>
+        <p>Deep insights, trends and performance reports in one place</p>
+      </div>
+    </div>
+    <i class="fa-solid fa-arrow-up-right-from-square analysis-cta-arrow"></i>
+
+
+
+  </a>
+
+</div>
